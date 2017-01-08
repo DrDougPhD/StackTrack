@@ -1,3 +1,15 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Greeting
+from .models import Fineness
+
+@admin.register(Greeting)
+class GreetingAdmin(admin.ModelAdmin):
+	pass
+
+
+@admin.register(Fineness)
+class FinenessAdmin(admin.ModelAdmin):
+	pass
+
+
