@@ -111,7 +111,9 @@ class Image(models.Model):
 	ingot = models.ForeignKey('Ingot')
 	#from_post = models.ForeignKey('SalePost')
 
+	"""
 	def save(self, *args, **kwargs):
 		if self.image:
 			self.image = ... #convert to JPEG
 		super(Image, self).save(*args, **kwargs)
+	"""
