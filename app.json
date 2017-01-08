@@ -1,0 +1,8 @@
+{
+	"name": "StackTrack",
+	"description": "Track your stack of silver, gold, platinum, and other precious metals.",
+	"image": "heroku/python",
+	"repository": "https://github.com/DrDougPhD/StackTrack",
+	"keywords": ["python", "django" ],
+	"addons": [ "heroku-postgresql" ]
+}
