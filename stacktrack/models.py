@@ -1,9 +1,5 @@
 from django.db import models
 
-# Create your models here.
-class Greeting(models.Model):
-	when = models.DateTimeField('date created', auto_now_add=True)
-
 
 class Fineness(models.Model):
 	multiplier = models.FloatField(null=False, default=1.0)

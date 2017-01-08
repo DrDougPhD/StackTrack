@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import requests
 
-from .models import Greeting
+from .models import Fineness
 
 # Create your views here.
 def index(request):
@@ -15,10 +15,10 @@ def index(request):
 
 def db(request):
 
-	greeting = Greeting()
-	greeting.save()
+	three_nines = Fineness(multiplier=1.0, friendly_name='.999 fine')
+	three_nines.save()
 
-	greetings = Greeting.objects.all()
+	finenesses = Fineness.objects.all()
 
-	return render(request, 'db.html', {'greetings': greetings})
+	return render(request, 'db.html', {'finenesses': finenesses})
 
