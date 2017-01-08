@@ -4,6 +4,7 @@ from .models import Ingot
 from .models import Fineness
 from .models import Mass
 from .models import IngotType
+from .models import Image
 
 
 @admin.register(Ingot)
@@ -22,3 +23,6 @@ class MassAdmin(admin.ModelAdmin):
 class IngotTypeAdmin(admin.ModelAdmin):
 	pass
 
+@admin.register(Image)
+class ImageAdmin(admin.ModelAdmin):
+	pass
