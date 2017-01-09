@@ -1,16 +1,29 @@
 from django.db import models
+from datetime import datetime
+from django.utils import timezone
+from cloudinary.models import CloudinaryField
+from django.contrib.auth.models import User
 
 
 class Ingot(models.Model):
-	name = models.CharField(max_length=80, null=False)
+	name = models.CharField(max_length=80)
 	description = models.TextField(default='')
+	mintage = models.CharField(max_length=20, default='Unspecified')
+	year = models.SmallIntegerField(null=True)
+	silverartcollector_item_number = models.CharField(
+		max_length=20,
+		null=True
+	)
+	date_posted = models.DateTimeField(
+		default=datetime.now,
+	)
 
-	SILVER = 'Ag'
-	GOLD = 'Au'
-	PLATINUM = 'Pt'
-	PALLADIUM = 'Pd'
-	RHODIUM = 'Rh'
-	COPPER = 'Cu'
+	SILVER =	'Ag'
+	GOLD =		'Au'
+	PLATINUM =	'Pt'
+	PALLADIUM =	'Pd'
+	RHODIUM =	'Rh'
+	COPPER	=	'Cu'
 	PRECIOUS_METALS = (
 		(SILVER, 'Silver'),
 		(GOLD, 'Gold'),
@@ -23,28 +36,40 @@ class Ingot(models.Model):
 		max_length=2,
 		choices=PRECIOUS_METALS,
 		default=SILVER,
-		null=False
 	)
 
 	# Foreign fields
-	fineness = models.ForeignKey('Fineness', null=False)
-	mass = models.ForeignKey('Mass', null=False)
-	ingot_type = models.ForeignKey('IngotType', null=False)
+	posted_by = models.ForeignKey(User, editable=False)
+	fineness = models.ForeignKey('Fineness')
+	mass = models.ForeignKey('Mass')
+	ingot_type = models.ForeignKey('IngotType')
+	manufacturer = models.ForeignKey('Manufacturer', null=True)
+	primary_images = models.ForeignKey('PrimaryImage', null=True)
 
 	# Proposed fields
-	# manufacturer = ...
-	# mintage = ...
-	# year = ...
-
-	#primary_obverse_img
-	#primary_reverse_img
 	#images
 	#sales
 
+	def __str__(self):
+		return '{name} - {mass} {fineness} {pm} {ingot_type}'.format(
+			name=self.name,
+			mass=self.mass,
+			fineness=self.fineness,
+			ingot_type=self.ingot_type,
+			pm=self.precious_metal,
+		)
+
+
+class Manufacturer(models.Model):
+	company_name = models.CharField(max_length=30)
+
+	def __str__(self):
+		return self.company_name
+
 
 class Fineness(models.Model):
-	multiplier = models.FloatField(null=False, default=1.0)
-	friendly_name = models.CharField(max_length=80, null=False)
+	multiplier = models.FloatField(default=1.0)
+	friendly_name = models.CharField(max_length=80)
 
 	class Meta:
 		verbose_name_plural = 'finenesses'
@@ -58,62 +83,275 @@ class Fineness(models.Model):
 
 ONE_TROY_OZ = 31.1
 class Mass(models.Model):
-	grams = models.FloatField(default=ONE_TROY_OZ, null=False)
-	friendly_name = models.CharField(max_length=80, null=False)
+	number = models.FloatField(default=1.0)
+	friendly_name = models.CharField(max_length=80)
+	unit = models.ForeignKey('UnitOfMass')
 
 	class Meta:
 		verbose_name_plural = "weights"
 
+	def convert_to_ozt(self):
+		return self.number*self.unit.ozt_multiplier
+
 	def __str__(self):
-		return '{friendly_name}: {grams} grams'.format(
+		return '{friendly_name} - {unit}'.format(
 			friendly_name=self.friendly_name,
-			grams=self.grams,
+			unit=self.unit.abbreviation,
+		)
+
+
+class UnitOfMass(models.Model):
+	name = models.CharField(max_length=20)
+	abbreviation = models.CharField(max_length=10)
+	ozt_multiplier = models.FloatField()
+
+	def __str__(self):
+		return '{name} ({abbr}): {ratio} {name} to 1 troy ounce'.format(
+			name=self.name,
+			ratio=self.ozt_multiplier,
+			abbr=self.abbreviation,
 		)
 
 
 class IngotType(models.Model):
-	name = models.CharField(max_length=10, null=False)
-	plural = models.CharField(max_length=10, null=False)
+	name = models.CharField(max_length=80)
 
 	def __str__(self):
 		return self.name
 
 
-import time
-import uuid
-import os
-current_milliseconds_epoch = lambda: int(round(time.time() * 1000))
-unique_image_filename = lambda: '{time}_{uuid}.jpg'.format(
-	time=current_milliseconds_epoch(),
-	uuid=''.join(str(uuid.uuid4()).split('-')),
-)
-IMAGE_STORAGE_DIR = 'imgs'
-where_to_store = lambda instance, filename: os.path.join(
-	IMAGE_STORAGE_DIR,
-	unique_image_filename()
-)
-from cloudinary.models import CloudinaryField
+import urllib.parse
 class Image(models.Model):
 	OBVERSE = True
 	REVERSE = False
 	SIDE_OF_INGOT = (
-		(OBVERSE, "obverse"),
-		(REVERSE, "reverse"),
+		(OBVERSE, "Obverse"),
+		(REVERSE, "Reverse"),
 	)
 
 	image = CloudinaryField('image')
-	#image = models.ImageField(upload_to=where_to_store, null=False)
 	is_obverse = models.BooleanField(
 		choices=SIDE_OF_INGOT,
 		default=OBVERSE,
-		null=False
 	)
-	ingot = models.ForeignKey('Ingot')
-	#from_post = models.ForeignKey('SalePost')
+	ingot = models.ForeignKey('Ingot', null=True)
+	from_post = models.ForeignKey('SalePost', null=True)
 
-	"""
-	def save(self, *args, **kwargs):
-		if self.image:
-			self.image = ... #convert to JPEG
-		super(Image, self).save(*args, **kwargs)
-	"""
+	def truncated_url(self):
+		url = 'http://example.com/stuff/image.jpg'
+		parsed = urllib.parse.urlsplit(url)
+		return '{scheme}//{netloc}/.../{filename}'.format(
+			scheme=parsed.scheme,
+			netloc=parsed.netloc,
+			filename=os.path.split(parsed.path)[-1],
+		)
+
+	def __str__(self):
+		return '{side} image - {ingot} - {truncated_url}'.format(
+			side=self.is_obverse,
+			ingot=self.ingot.name,
+			truncated_url=self.truncated_url(),
+		)
+
+
+class PrimaryImage(models.Model):
+	obverse_image = models.ForeignKey('Image',
+		related_name='obverse_img',
+	)
+	reverse_image = models.ForeignKey('Image',
+		related_name='reverse_img',
+	)
+
+	def __str__(self):
+		return '{obv} + {rev}'.format(
+			obv=self.obverse_image.truncated_url(),
+			rev=self.reverse_image.truncated_url()
+		)
+
+
+class StackEntry(models.Model):
+	ingot = models.ForeignKey('Ingot')
+	owner = models.ForeignKey(User, editable=False)
+
+	purchase = models.ForeignKey('Transaction',
+		related_name='into_stack',
+	)
+	bought_for = models.ForeignKey('TransactionAmount',
+		related_name='into_stack',
+	)
+
+	sale = models.ForeignKey('Transaction',
+		related_name='from_stack',
+		null=True,
+	)
+	sold_for = models.ForeignKey('TransactionAmount',
+		related_name='from_stack',
+		null=True,
+	)
+
+	def __str__(self):
+		return '{user} - {price} - {ingot}'.format(
+			user=self.owner,
+			price=self.bought_for,
+			ingot=self.ingot.name,
+		)
+
+
+class TransactionAmount(models.Model):
+	amount = models.DecimalField(
+		max_digits=20,
+		decimal_places=10,
+	)
+	currency = models.ForeignKey('Currency')
+	original_currency_amount = models.ForeignKey('TransactionAmount',
+		null=True,
+	)
+
+	def __str__(self):
+		return '{symbol}{amount}'.format(
+			symbol=self.currency.symbol,
+			amount=self.amount,
+		)
+
+
+class Currency(models.Model):
+	name = models.CharField(max_length=30)
+	abbreviation = models.CharField(max_length=5)
+	symbol = models.CharField(max_length=1)
+	country = models.CharField(max_length=30)
+
+	def __str__(self):
+		return '{name} ({sym}, {abbr}, {country})'.format(
+			name=self.name,
+			abbr=self.abbreviation,
+			sym=self.symbol,
+			country=self.country,
+		)
+
+
+class PlatformUser(models.Model):
+	stacktrack_user = models.ForeignKey(User, null=True)
+	username = models.CharField(max_length=80)
+	user_id = models.CharField(max_length=40, null=True)
+	platform = models.ForeignKey('Platform')
+
+	PHANTOM_USER = True
+	REGISTERED_USER = False
+	PLATFORM_USER_TYPES = (
+		(PHANTOM_USER, 'Phantom User'),
+		(REGISTERED_USER, 'Registered User'),
+	)
+	is_phantom = models.BooleanField(
+		choices=PLATFORM_USER_TYPES,
+		default=PHANTOM_USER
+	)
+
+	def __str__(self):
+		return '{username}@{platform} ({phantom})'.format(
+			username=self.username,
+			platform=self.platform.name,
+			phantom=self.phantom,
+		)
+
+
+class Platform(models.Model):
+	name = models.CharField(max_length=80)
+	homepage = models.URLField(max_length=80, null=True)
+	user_url_fmt = models.URLField(null=True)
+	post_url_fmt = models.URLField(null=True)
+	logo = CloudinaryField('image', null=True)
+
+	def __str__(self):
+		return '{name} - {url}'.format(
+			name=self.name,
+			url=self.homepage,
+		)
+
+
+class SalePost(models.Model):
+	title = models.CharField(max_length=300)
+	description = models.TextField(default='')
+	platform = models.ForeignKey('Platform')
+	seller = models.ForeignKey('PlatformUser')
+	ebay_post_attributes = models.ForeignKey('EbayPostAttributes',
+		null=True
+	)
+	date_listed = models.DateTimeField(default=datetime.now)
+
+	def __str__(self):
+		return 'Sale@{platform} - {title} - from {seller} - {date}'.format(
+			platform=self.platform.name,
+			title=self.title,
+			seller=self.seller.username,
+			date=self.date_listed,
+		)
+
+
+class EbayPostAttributes(models.Model):
+	post_id = models.BigIntegerField()
+
+	def __str__(self):
+		return str(self.post_id)
+
+
+class Transaction(models.Model):
+	total_price = models.ForeignKey('TransactionAmount')
+	shipping = models.ForeignKey('Shipping')
+	# rewards/discount = ...
+	timestamp = models.DateTimeField(default=datetime.now)
+	from_post = models.ForeignKey('SalePost', null=True)
+
+	def __str__(self):
+		return '{price} + {shipping} S/H'.format(
+			price=self.total_price,
+			shipping=self.shipping.price,
+		)
+
+
+class Shipping(models.Model):
+	shipping_company = models.ForeignKey('ShippingCompany')
+	price = models.ForeignKey('TransactionAmount')
+	tracking = models.CharField(max_length=30, default='N/A')
+
+	def __str__(self):
+		return '{tracking} - {company}'.format(
+			tracking=self.tracking,
+			company=self.shipping_company.company_name,
+		)
+
+
+class ShippingCompany(models.Model):
+	company_name = models.CharField(max_length=30)
+	url = models.URLField()
+	tracking_url_fmt = models.URLField()
+	# country?
+
+	def __str__(self):
+		return self.company_name
+
+
+class ShippingStatus(models.Model):
+	timestamp = models.DateTimeField()
+	location = models.CharField(max_length=80)
+	note = models.CharField(max_length=160, default='')
+	shipping = models.ForeignKey('Shipping')
+
+	def __str__(self):
+		return '{location} on {timestamp}'.format(
+			location=self.location,
+			timestamp=self.timestamp,
+		)
+
+"""
+class Trade(models.Model):
+	initiator = models.ForeignKey('PlatformUser')
+	respondent = models.ForeignKey('PlatformUser')
+	timestamp = models.DateTimeField(default=datetime.now)
+	from_post = ...
+
+
+class TradeItem(models.Model):
+	associated_trade = models.ForeignKey('Trade')
+	from_stack = models.ForeignKey('StackEntry')
+"""
+
