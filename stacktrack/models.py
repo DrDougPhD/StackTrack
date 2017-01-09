@@ -220,6 +220,9 @@ class Currency(models.Model):
 	symbol = models.CharField(max_length=1)
 	country = models.CharField(max_length=30)
 
+	class Meta:
+		verbose_name_plural = 'currencies'
+
 	def __str__(self):
 		return '{name} ({sym}, {abbr}, {country})'.format(
 			name=self.name,
