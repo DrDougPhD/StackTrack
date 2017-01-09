@@ -72,7 +72,7 @@ class Fineness(models.Model):
 	friendly_name = models.CharField(max_length=80)
 
 	class Meta:
-		verbose_name_plural = 'finenesses'
+		verbose_name_plural = 'fineness entries'
 
 	def __str__(self):
 		return '{friendly_name}: x{multiplier} multiplier'.format(
