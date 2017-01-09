@@ -105,6 +105,9 @@ class UnitOfMass(models.Model):
 	abbreviation = models.CharField(max_length=10)
 	ozt_multiplier = models.FloatField()
 
+	class Meta:
+		verbose_name_plural = 'mass units'
+
 	def __str__(self):
 		return '{name} ({abbr}): {ratio} {name} to 1 troy ounce'.format(
 			name=self.name,
@@ -188,6 +191,9 @@ class StackEntry(models.Model):
 		related_name='from_stack',
 		null=True,
 	)
+
+	class Meta:
+		verbose_name_plural = 'stack entries'
 
 	def __str__(self):
 		return '{user} - {price} - {ingot}'.format(
@@ -293,6 +299,9 @@ class SalePost(models.Model):
 class EbayPostAttributes(models.Model):
 	post_id = models.BigIntegerField()
 
+	class Meta:
+		verbose_name_plural = 'ebay post attributes'
+
 	def __str__(self):
 		return str(self.post_id)
 
@@ -316,6 +325,9 @@ class Shipping(models.Model):
 	price = models.ForeignKey('TransactionAmount')
 	tracking = models.CharField(max_length=30, default='N/A')
 
+	class Meta:
+		verbose_name_plural = 'shipping orders'
+
 	def __str__(self):
 		return '{tracking} - {company}'.format(
 			tracking=self.tracking,
@@ -329,6 +341,9 @@ class ShippingCompany(models.Model):
 	tracking_url_fmt = models.URLField()
 	# country?
 
+	class Meta:
+		verbose_name_plural = 'shipping companies'
+
 	def __str__(self):
 		return self.company_name
 
@@ -338,6 +353,9 @@ class ShippingStatus(models.Model):
 	location = models.CharField(max_length=80)
 	note = models.CharField(max_length=160, default='')
 	shipping = models.ForeignKey('Shipping')
+
+	class Meta:
+		verbose_name_plural = 'shipping status updates'
 
 	def __str__(self):
 		return '{location} on {timestamp}'.format(
