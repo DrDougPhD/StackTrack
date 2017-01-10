@@ -26,71 +26,12 @@ def process(csvrecords):
 	"""
 	us_dollar = ('US Dollar', 'USD', '$', 'United States')
 	admin = 'Me' # User.objects.all()[0]
-	three_nines_fine = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
-	# fineness.save()
-	ingot_types = [
-		'bar', #IngotType(name='bar'),
-		'round', #IngotType(name='round'),
-		'coin', #IngotType(name='coin'),
-		'ingot',
-	]
-	silver = 'Ag'
-	"""
-	for ingot_name in ingot_types:
-		ingot_types[ingot_name].save()
-	"""
 
 	records = [dict(r) for r in csvrecords]
 	process_platforms(records)
 	process_shipping(records, us_dollar)
 	process_masses(records)
-
-	# Process ingots
-	ingots = {}
-	words_in_ingot_names = set()
-	for r in records:
-		ingot_name = r['Item']
-
-		# detect ingot type from name
-		ingot_type = 'Not specified'
-		stop = False
-		for ingot_word in ingot_types:
-			for word in ingot_name.split():
-				if ingot_word in word.lower():
-					ingot_type = ingot_word
-					stop = True
-					break
-
-			if stop:
-				break
-
-		if ingot_name in ingots:
-			ingot = ingots[ingot_name]
-
-		else:
-			ingot = {
-				'name': ingot_name,
-				'description': '',
-				# mintage: ,
-				# year: ,
-				# silverartcollector_item_number: ,
-				'date_posted': datetime.now(),
-				'precious_metal': silver,
-				'posted_by': admin,
-				'fineness': three_nines_fine,
-				'mass': r['mass'],
-				'ingot_type': ingot_type,
-				# manufacturer: ,
-				# primary_images: ,
-			}
-			ingots[ingot_name] = ingot
-
-		r['ingot'] = ingot
-
-	print('-'*10 + '|~ Ingots ~|' + '-'*10)
-	pprint.pprint(ingots)
-	pprint.pprint(words_in_ingot_names)
-
+	process_ingots(records, admin)
 
 	"""
 	# Ingot
@@ -156,6 +97,63 @@ def process(csvrecords):
 		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
 		mass = Mass(number='', friendly_name='', unit='')
 	"""
+
+
+
+def process_ingots(records, admin):
+	three_nines_fine = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
+	# fineness.save()
+	ingot_types = [
+		'bar', #IngotType(name='bar'),
+		'round', #IngotType(name='round'),
+		'coin', #IngotType(name='coin'),
+		'ingot',
+	]
+	silver = 'Ag'
+
+	# Process ingots
+	ingots = {}
+	for r in records:
+		ingot_name = r['Item']
+
+		# detect ingot type from name
+		ingot_type = 'Not specified'
+		stop = False
+		for ingot_word in ingot_types:
+			for word in ingot_name.split():
+				if ingot_word in word.lower():
+					ingot_type = ingot_word
+					stop = True
+					break
+
+			if stop:
+				break
+
+		if ingot_name in ingots:
+			ingot = ingots[ingot_name]
+
+		else:
+			ingot = {
+				'name': ingot_name,
+				'description': '',
+				# mintage: ,
+				# year: ,
+				# silverartcollector_item_number: ,
+				'date_posted': datetime.now(),
+				'precious_metal': silver,
+				'posted_by': admin,
+				'fineness': three_nines_fine,
+				'mass': r['mass'],
+				'ingot_type': ingot_type,
+				# manufacturer: ,
+				# primary_images: ,
+			}
+			ingots[ingot_name] = ingot
+
+		r['ingot'] = ingot
+
+	print('-'*10 + '|~ Ingots ~|' + '-'*10)
+	pprint.pprint(ingots)
 
 
 def process_masses(records):
