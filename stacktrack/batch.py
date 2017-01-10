@@ -53,29 +53,37 @@ def process(csvrecords):
 	registered_weights = {}
 	for r in records:
 		ozt = r['Size (ozt)']
-		g = r['Total unit weight (g)'] or None
 
-		# is this unit in grams or ozt?
-		if g:
-			registered_weights[ozt] = {
-				'number': float(g),
-				'friendly_name': '{} grams'.format(g),
-				'unit': gram_to_ozt,
-			}
+		if ozt in registered_weights:
+			weight = registered_weights[ozt]
+
 		else:
-			troy_ounces = float(ozt)
-			if troy_ounces >= 1:
-				friendly_name_number = troy_ounces
-			else:
-				fraction = int(1/troy_ounces)
-				friendly_name_number = '1/{}'.format(fraction)
-				
-			registered_weights[ozt] = {
-				'number': float(ozt),
-				'friendly_name': '{} ozt'.format(friendly_name_number),
-				'unit': ozt_to_ozt,
-			}
+			g = r['Total unit weight (g)'] or None
 
+			# is this unit in grams or ozt?
+			if g:
+				weight = {
+					'number': float(g),
+					'friendly_name': '{} grams'.format(g),
+					'unit': gram_to_ozt,
+			} 
+			else:
+				troy_ounces = float(ozt)
+				if troy_ounces >= 1:
+					friendly_name_number = troy_ounces
+				else:
+					fraction = int(1/troy_ounces)
+					friendly_name_number = '1/{}'.format(fraction)
+
+				weight = {	
+					'number': float(ozt),
+					'friendly_name': '{} ozt'.format(friendly_name_number),
+					'unit': ozt_to_ozt,
+				}
+
+			registered_weights[ozt] = weight
+
+		r['mass'] = weight
 
 	print('-'*10 + '|~ Mass ~|' + '-'*10)
 	print('Units of mass: {}'.format(pprint.pformat(units_of_mass)))
