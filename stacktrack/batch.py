@@ -41,54 +41,7 @@ def process(csvrecords):
 	records = [dict(r) for r in csvrecords]
 	process_platforms(records)
 	process_shipping(records, us_dollar)
-	#process_masses(records)
-
-	# Process masses
-	gram_to_ozt = {'name': 'gram', 'abbreviation': 'g', 'ozt_multiplier': 0.03215}
-	ozt_to_ozt = {'name': 'troy ounce', 'abbreviation': 'ozt', 'ozt_multiplier': 1.0}
-	units_of_mass = {
-		'gram': gram_to_ozt,
-		'troy ounce': ozt_to_ozt,
-	}
-	registered_weights = {}
-	for r in records:
-		ozt = r['Size (ozt)']
-
-		if ozt in registered_weights:
-			weight = registered_weights[ozt]
-
-		else:
-			g = r['Total unit weight (g)'] or None
-
-			# is this unit in grams or ozt?
-			if g:
-				weight = {
-					'number': float(g),
-					'friendly_name': '{} grams'.format(g),
-					'unit': gram_to_ozt,
-			} 
-			else:
-				troy_ounces = float(ozt)
-				if troy_ounces >= 1:
-					friendly_name_number = troy_ounces
-				else:
-					fraction = int(1/troy_ounces)
-					friendly_name_number = '1/{}'.format(fraction)
-
-				weight = {	
-					'number': float(ozt),
-					'friendly_name': '{} ozt'.format(friendly_name_number),
-					'unit': ozt_to_ozt,
-				}
-
-			registered_weights[ozt] = weight
-
-		r['mass'] = weight
-
-	print('-'*10 + '|~ Mass ~|' + '-'*10)
-	print('Units of mass: {}'.format(pprint.pformat(units_of_mass)))
-	print('-'*40)
-	pprint.pprint(registered_weights)
+	process_masses(records)
 
 	"""
 	# Ingot
@@ -154,6 +107,55 @@ def process(csvrecords):
 		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
 		mass = Mass(number='', friendly_name='', unit='')
 	"""
+
+
+def process_masses(records):
+	# Process masses
+	gram_to_ozt = {'name': 'gram', 'abbreviation': 'g', 'ozt_multiplier': 0.03215}
+	ozt_to_ozt = {'name': 'troy ounce', 'abbreviation': 'ozt', 'ozt_multiplier': 1.0}
+	units_of_mass = {
+		'gram': gram_to_ozt,
+		'troy ounce': ozt_to_ozt,
+	}
+	registered_weights = {}
+	for r in records:
+		ozt = r['Size (ozt)']
+
+		if ozt in registered_weights:
+			weight = registered_weights[ozt]
+
+		else:
+			g = r['Total unit weight (g)'] or None
+
+			# is this unit in grams or ozt?
+			if g:
+				weight = {
+					'number': float(g),
+					'friendly_name': '{} grams'.format(g),
+					'unit': gram_to_ozt,
+			} 
+			else:
+				troy_ounces = float(ozt)
+				if troy_ounces >= 1:
+					friendly_name_number = troy_ounces
+				else:
+					fraction = int(1/troy_ounces)
+					friendly_name_number = '1/{}'.format(fraction)
+
+				weight = {	
+					'number': float(ozt),
+					'friendly_name': '{} ozt'.format(friendly_name_number),
+					'unit': ozt_to_ozt,
+				}
+
+			registered_weights[ozt] = weight
+
+		r['mass'] = weight
+
+	print('-'*10 + '|~ Mass ~|' + '-'*10)
+	print('Units of mass: {}'.format(pprint.pformat(units_of_mass)))
+	print('-'*40)
+	pprint.pprint(registered_weights)
 
 
 def process_shipping(records, us_dollar):
