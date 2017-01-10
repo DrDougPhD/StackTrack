@@ -62,7 +62,75 @@ def process(csvrecords):
 	records = [dict(r) for r in csvrecords]
 
 	process_platforms(records)
+	process_shipping(records, us_dollar)
 
+	"""
+	# Ingot
+		fineness
+		mass
+		mass_unit
+		ingot_type
+		image
+		primary_image
+
+	# Stack Entry
+		ingot # done
+		owner # done
+		purchase
+		bought_for
+
+	# Purchase (Transaction)
+
+	# Purchase Amount (TransactionAmount, single ingot)
+		currency # done
+
+	# Platform User
+		platform # done
+
+	# Sale Post
+		platform # done
+		seller # done
+
+	# Total cost of transaction?
+		shipping # done
+		total_price
+		sale_post # above
+
+	"""
+	"""
+	if True:
+		price = TransactionAmount(
+			amount=,
+			currency=us_dollar,
+		)
+		price.save()
+
+		stack_entry = StackEntry(
+			ingot=ingot,
+			owner=admin,
+			purchase=tx,
+			bought_for=price,
+		)
+
+	ingots = set()
+	registered_weights = set()
+	for r in records:
+		mass_entry = registered_weights.add(r['Size (ozt)'])
+		ingots.add(r['Item'])
+
+	pprint(ingots)
+	pprint(registered_weights)
+	"""
+
+	# Create mass entries
+	"""
+	for m in registered_weights:
+		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
+		mass = Mass(number='', friendly_name='', unit='')
+	"""
+
+
+def process_shipping(records, us_dollar):
 	shipping_companies = {}
 	tracking_numbers = {}
 	shipping_costs = {}
@@ -158,38 +226,6 @@ def process(csvrecords):
 	pprint(shipping_costs)
 	print('-'*10 + '|~ Tracking ~|' + '-'*10)
 	pprint(tracking_numbers)
-
-	"""
-	if True:
-		price = TransactionAmount(
-			amount=,
-			currency=us_dollar,
-		)
-		price.save()
-
-		stack_entry = StackEntry(
-			ingot=ingot,
-			owner=admin,
-			purchase=tx,
-			bought_for=price,
-		)
-
-	ingots = set()
-	registered_weights = set()
-	for r in records:
-		mass_entry = registered_weights.add(r['Size (ozt)'])
-		ingots.add(r['Item'])
-
-	pprint(ingots)
-	pprint(registered_weights)
-	"""
-
-	# Create mass entries
-	"""
-	for m in registered_weights:
-		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
-		mass = Mass(number='', friendly_name='', unit='')
-	"""
 
 
 def process_platforms(records):
