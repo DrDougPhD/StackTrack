@@ -38,18 +38,6 @@ for mass in MASS_CONVERSION:
 
 def process(csvrecords):
 	"""
-	admin = User.objects.all()[0]
-	fineness = Fineness(friendly_name='.999 fine (three nines)')
-	fineness.save()
-	ingot_types = {
-		'bar': IngotType(name='bar'),
-		'round': IngotType(name='round'),
-		'coin': IngotType(name='coin'),
-	}
-	for ingot_name in ingot_types:
-		ingot_types[ingot_name].save()
-	"""
-	"""
 	us_dollar = Currency(
 		name='US Dollar',
 		abbreviation='USD',
@@ -59,17 +47,37 @@ def process(csvrecords):
 	us_dollar.save()
 	"""
 	us_dollar = ('US Dollar', 'USD', '$', 'United States')
-	records = [dict(r) for r in csvrecords]
+	admin = 'Me' # User.objects.all()[0]
+	fineness = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
+	# fineness.save()
+	ingot_types = {
+		'bar': None, #IngotType(name='bar'),
+		'round': None, #IngotType(name='round'),
+		'coin': None, #IngotType(name='coin'),
+	}
+	"""
+	for ingot_name in ingot_types:
+		ingot_types[ingot_name].save()
+	"""
 
+	records = [dict(r) for r in csvrecords]
 	process_platforms(records)
 	process_shipping(records, us_dollar)
+	#process_masses(records)
+
+	registered_masses = {}
+	for r in records:
+		pass
+
+	print('-'*10 + '|~ Mass ~|' + '-'*10)
+	pprint(registered_masses)
 
 	"""
 	# Ingot
-		fineness
+		fineness # done
 		mass
 		mass_unit
-		ingot_type
+		ingot_type # done
 		image
 		primary_image
 
