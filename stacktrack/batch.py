@@ -60,23 +60,62 @@ def process(csvrecords):
 	records = [dict(r) for r in csvrecords]
 
 	# Platform
-	def extract_platform_name(r):
-		sale_url = r['Purchase message thread']
-		if not sale_url:
-			return 'N/A', None
-
-		parsed_url = urllib.parse.urlparse(sale_url)
+	def extract_platform_info(url):
+		parsed_url = urllib.parse.urlparse(url)
 		domain_name = parsed_url.netloc.split('.')[-2]
 		homepage = '{scheme}://{netloc}/'.format(
 			scheme=parsed_url.scheme,
 			netloc=parsed_url.netloc,
 		)
-
 		return domain_name, homepage
 
+	# Platform user
+	def extract_platform_user(url, platform_name):
+		import os
+		def basename_url_extractor(url):
+			parsed_url = urllib.parse.urlparse(url)
+			return os.path.basename(parsed_url.path)
+
+		extractors = {
+			'ebay': basename_url_extractor,
+			'reddit': basename_url_extractor,
+			'N/A': lambda x: x or 'Not specified',
+			'apmex': lambda x: 'APMEX',
+			'jmbullion': lambda x: 'JM Bullion',
+			'providentmetals': lambda x: 'Provident Metals',
+			'qualitysilverbullion': lambda x: 'QSB: Quality Silver Bullion',
+		}
+		username = extractors[platform_name](url)
+		print('{username}:\t {platform_name}'.format(**locals()))
+		return username
+
+	def extract_platform(r):
+		# Extract platform from sale URL
+		url = r['Purchase message thread']
+		if not url:
+			url = r['Purchased from']
+
+		if not url or not url.startswith('http'):
+			domain_name = 'N/A'
+			homepage = None
+
+		else:
+			domain_name, homepage = extract_platform_info(url)
+
+		# Extract username
+		url = r['Purchased from']
+		if not url:
+			username = 'Not specified'
+
+		else:
+			username = extract_platform_user(url, domain_name)
+
+		return domain_name, homepage, username
+
 	platforms = {}
+	users = {}
 	for record in records:
-		platform_name, homepage = extract_platform_name(record)
+		platform_name, homepage, username = extract_platform(record)
 		if platform_name in platforms:
 			p = platforms[platform_name]
 
@@ -96,6 +135,24 @@ def process(csvrecords):
 
 		record['platform'] = p
 
+		if username in users:
+			u = users[username]
+
+		else:
+			"""
+			user = PlatformUser(
+				username='',
+				platform=record['platform'],
+			)
+			user.save()
+
+			u = PlatformUser
+			"""
+			u = (username, p)
+			users[username] = u
+
+		record['seller'] = u
+
 		"""
 		if record[] in platforms:
 			platform_key = ... # extract domain from sale url
@@ -106,6 +163,9 @@ def process(csvrecords):
 		record['platform'] = p
 		"""
 
+	print('-'*10 + '|~ USERS ~|' + '-'*10)
+	pprint(users)
+	print('-'*10 + '|~ PLATFORMS ~|' + '-'*10)
 	pprint(platforms)
 
 	"""
