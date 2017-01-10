@@ -48,7 +48,8 @@ def process(csvrecords):
 	}
 	for ingot_name in ingot_types:
 		ingot_types[ingot_name].save()
-
+	"""
+	"""
 	us_dollar = Currency(
 		name='US Dollar',
 		abbreviation='USD',
@@ -57,16 +58,106 @@ def process(csvrecords):
 	)
 	us_dollar.save()
 	"""
+	us_dollar = ('US Dollar', 'USD', '$', 'United States')
 	records = [dict(r) for r in csvrecords]
+
 	process_platforms(records)
 
-	print('-'*10 + '|~ Shipping ~|' + '-'*10)
 	shipping_companies = {}
+	tracking_numbers = {}
+	shipping_costs = {}
 	for r in records:
+		# Shipping costs
+		if r['Actual shipping']:
+			shipping_cost_entry = r['Actual shipping']
+
+		elif r['Charged shipping']:
+			shipping_cost_entry = r['Charged shipping']
+
+		else:
+			shipping_cost_entry = '0.00'
+
+		shipping_cost = float(shipping_cost_entry)
+
+		if shipping_cost in shipping_costs:
+			shipping_tx = shipping_costs[shipping_cost]
+
+		else:
+			"""
+			shipping_tx = TransactionAmount(
+				amount=shipping_cost,
+				currency=us_dollar,
+			)
+			shipping_tx.save()
+			"""
+			shipping_tx = (shipping_cost, us_dollar)
+			shipping_costs[shipping_cost] = shipping_tx
+
+		r['shipping_cost'] = shipping_tx
+
+
+		# Shipping company
 		tracking = r['Purchase tracking']
 		if tracking:
 			domain_name, homepage = extract_website_info(tracking)
 			print('{domain_name}:\t{homepage}'.format(**locals()))
+
+		else:
+			domain_name, homepage = ('Not specified', None)
+
+		if domain_name in shipping_companies:
+			s = shipping_companies[domain_name]
+
+		else:
+			"""
+			s = ShippingCompany(
+				company_name=domain_name,
+				url=homepage,
+				# tracking_url_fmt=,
+			)
+			s.save()
+			"""
+			s = (domain_name, homepage)
+			shipping_companies[domain_name] = s
+
+		r['shipping_company'] = s
+
+		# Tracking
+		if tracking:
+			parsed_url = urllib.parse.urlparse(tracking)
+			query_params = urllib.parse.parse_qsl(parsed_url.query)
+			assert len(query_params) == 1, (
+				'Tracking URL has more than one query'
+				' parameters: {}').format(tracking)
+			tracking_num = query_params[0][1]
+			print(tracking_num)
+
+		else:
+			tracking_num = 'None specified'
+
+		if tracking_num in tracking_numbers:
+			t = tracking_numbers[tracking_num]
+
+		else:
+			"""
+			t = Shipping(
+				shipping_company=s,
+				price=shipping_tx,
+				tracking=tracking_num,
+			)
+			t.save()
+			"""
+			t = (s, shipping_tx, tracking_num)
+			tracking_numbers[tracking_num] = t
+
+		r['tracking'] = t
+
+	print('-'*10 + '|~ Shipping ~|' + '-'*10)
+	pprint(shipping_companies)
+	print('-'*10 + '|~ Ship cost ~|' + '-'*10)
+	pprint(shipping_costs)
+	print('-'*10 + '|~ Tracking ~|' + '-'*10)
+	pprint(tracking_numbers)
 
 	"""
 	if True:
@@ -173,13 +264,12 @@ def process_platforms(records):
 
 		else:
 			"""
-			user = PlatformUser(
-				username='',
-				platform=record['platform'],
+			u = PlatformUser(
+				username=username,
+				platform=p,
 			)
-			user.save()
+			u.save()
 
-			u = PlatformUser
 			"""
 			u = (username, p)
 			users[username] = u
@@ -556,7 +646,7 @@ class Shipping(models.Model):
 class ShippingCompany(models.Model):
 	company_name = models.CharField(max_length=30)
 	url = models.URLField()
-	tracking_url_fmt = models.URLField()
+	tracking_url_fmt = models.URLField(null=True)
 	# country?
 
 	class Meta:
