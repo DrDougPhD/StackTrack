@@ -2,6 +2,8 @@ import csv
 import pprint
 import urllib.parse
 from datetime import datetime
+import os
+from collections import defaultdict
 
 csv_filename = 'ag_tx.csv'
 
@@ -33,15 +35,78 @@ def process(csvrecords):
 	process_masses(records)
 	process_ingots(records, admin)
 
-	"""
-	# Ingot
-		fineness # done
-		mass # done
-		mass_unit # done
-		ingot_type # done
-		image
-		primary_image
+	# sale posts
+	sale_posts = {}
+	for r in records:
+		url = r['Purchase message thread']
+		if not url:
+			continue
 
+		domain_name, homepage = extract_website_info(url)
+		parsed_url = urllib.parse.urlparse(url)
+
+		stripped_queries = lambda x: '{scheme}://{netloc}{path}'.format(
+			scheme=x.scheme,
+			netloc=x.netloc,
+			path=x.path
+		)
+		url_cleaners = {
+			'jmbullion': lambda x: x,
+			'ebay': stripped_queries,
+			'reddit': stripped_queries,
+			'apmex': stripped_queries,
+			'providentmetals': stripped_queries,
+			'qualitysilverbullion': stripped_queries,
+		}
+		cleaned_url = url_cleaners[domain_name](parsed_url)
+
+		before_last_forward_slash = lambda x: x.path.split('/')[-2]
+		last_entry_in_path = lambda x: os.path.basename(x.path)
+		first_query_parameter = lambda x: urllib.parse.parse_qsl(x.query)[0][1]
+		def reddit_id_extractor(x):
+			if 'message' in x.path:
+				return last_entry_in_path(x)
+
+			else:
+				return before_last_forward_slash(x)
+
+		extractors = defaultdict(lambda x: x)
+		extractors.update({
+			'ebay': last_entry_in_path,
+			'jmbullion': before_last_forward_slash,
+			'providentmetals': before_last_forward_slash,
+			'reddit': reddit_id_extractor,
+			'qualitysilverbullion': last_entry_in_path,
+			'apmex': last_entry_in_path,
+			'jmbullion': first_query_parameter,
+		})
+		unique_id  = extractors[domain_name](parsed_url)
+
+		# cleaned_url = ...
+		#print(unique_id)
+		#print('\t\t\t\t{}'.format(cleaned_url))
+
+		if unique_id in sale_posts:
+			sale_post = sale_posts[unique_id]
+
+		else:
+			sale_post = {
+				'title': cleaned_url,
+				'description': url,
+				'platform': r['platform'],
+				'seller': r['seller'],
+				# ebay_post_attributes: ...,
+				'date_listed': '',
+				'access_id': unique_id,
+			}
+			sale_posts[unique_id] = sale_post
+
+		r['sale_post'] = sale_post
+
+	print('-'*10 + '|~ Sale posts ~|' + '-'*10)
+	pprint.pprint(sale_posts)
+
+	"""
 	# Stack Entry
 		ingot # done
 		owner # done
@@ -306,7 +371,6 @@ def process_shipping(records, us_dollar):
 def process_platforms(records):
 	# Platform user
 	def extract_platform_user(url, platform_name):
-		import os
 		def basename_url_extractor(url):
 			parsed_url = urllib.parse.urlparse(url)
 			return os.path.basename(parsed_url.path)
@@ -705,6 +769,7 @@ class SalePost(models.Model):
 		null=True
 	)
 	date_listed = models.DateTimeField(default=datetime.now)
+	access_id = models.CharField(max_length=20)
 
 	def __str__(self):
 		return 'Sale@{platform} - {title} - from {seller} - {date}'.format(

@@ -286,6 +286,7 @@ class SalePost(models.Model):
 		null=True
 	)
 	date_listed = models.DateTimeField(default=datetime.now)
+	access_id = models.CharField(max_length=20)
 
 	def __str__(self):
 		return 'Sale@{platform} - {title} - from {seller} - {date}'.format(
