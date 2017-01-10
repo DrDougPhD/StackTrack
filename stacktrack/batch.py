@@ -1,7 +1,7 @@
 import csv
 import pprint
 import urllib.parse
-
+from datetime import datetime
 
 csv_filename = 'ag_tx.csv'
 
@@ -26,13 +26,15 @@ def process(csvrecords):
 	"""
 	us_dollar = ('US Dollar', 'USD', '$', 'United States')
 	admin = 'Me' # User.objects.all()[0]
-	fineness = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
+	three_nines_fine = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
 	# fineness.save()
-	ingot_types = {
-		'bar': None, #IngotType(name='bar'),
-		'round': None, #IngotType(name='round'),
-		'coin': None, #IngotType(name='coin'),
-	}
+	ingot_types = [
+		'bar', #IngotType(name='bar'),
+		'round', #IngotType(name='round'),
+		'coin', #IngotType(name='coin'),
+		'ingot',
+	]
+	silver = 'Ag'
 	"""
 	for ingot_name in ingot_types:
 		ingot_types[ingot_name].save()
@@ -43,11 +45,55 @@ def process(csvrecords):
 	process_shipping(records, us_dollar)
 	process_masses(records)
 
+	# Process ingots
+	ingots = {}
+	words_in_ingot_names = set()
+	for r in records:
+		ingot_name = r['Item']
+
+		# detect ingot type from name
+		ingot_type = 'Not specified'
+		for ingot_word in ingot_types:
+			for word in ingot_name.split():
+				if ingot_word in word.lower():
+					ingot_type = ingot_word
+					break
+
+		"""
+		if ingot_name in ingots:
+			ingot = ingots[ingot_name]
+
+		else:
+			ingot = {
+				'name': ingot_name,
+				'description': '',
+				# mintage: ,
+				# year: ,
+				# silverartcollector_item_number: ,
+				'date_posted': datetime.now(),
+				'precious_metal': silver,
+				'posted_by': admin,
+				'fineness': three_nines_fine,
+				'mass': r['mass'],
+				'ingot_type': ingot_type,
+				# manufacturer: ,
+				# primary_images: ,
+			}
+			ingots[ingot_name] = ingot
+
+		r['ingot'] = ingot
+		"""
+
+	print('-'*10 + '|~ Ingots ~|' + '-'*10)
+	pprint.pprint(ingots)
+	pprint.pprint(words_in_ingot_names)
+
+
 	"""
 	# Ingot
 		fineness # done
-		mass
-		mass_unit
+		mass # done
+		mass_unit # done
 		ingot_type # done
 		image
 		primary_image
