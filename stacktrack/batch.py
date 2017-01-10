@@ -58,17 +58,50 @@ def process(csvrecords):
 	us_dollar.save()
 	"""
 	records = [dict(r) for r in csvrecords]
+	process_platforms(records)
 
-	# Platform
-	def extract_platform_info(url):
-		parsed_url = urllib.parse.urlparse(url)
-		domain_name = parsed_url.netloc.split('.')[-2]
-		homepage = '{scheme}://{netloc}/'.format(
-			scheme=parsed_url.scheme,
-			netloc=parsed_url.netloc,
+	print('-'*10 + '|~ Shipping ~|' + '-'*10)
+	shipping_companies = {}
+	for r in records:
+		tracking = r['Purchase tracking']
+		if tracking:
+			domain_name, homepage = extract_website_info(tracking)
+			print('{domain_name}:\t{homepage}'.format(**locals()))
+
+	"""
+	if True:
+		price = TransactionAmount(
+			amount=,
+			currency=us_dollar,
 		)
-		return domain_name, homepage
+		price.save()
 
+		stack_entry = StackEntry(
+			ingot=ingot,
+			owner=admin,
+			purchase=tx,
+			bought_for=price,
+		)
+
+	ingots = set()
+	registered_weights = set()
+	for r in records:
+		mass_entry = registered_weights.add(r['Size (ozt)'])
+		ingots.add(r['Item'])
+
+	pprint(ingots)
+	pprint(registered_weights)
+	"""
+
+	# Create mass entries
+	"""
+	for m in registered_weights:
+		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
+		mass = Mass(number='', friendly_name='', unit='')
+	"""
+
+
+def process_platforms(records):
 	# Platform user
 	def extract_platform_user(url, platform_name):
 		import os
@@ -100,7 +133,7 @@ def process(csvrecords):
 			homepage = None
 
 		else:
-			domain_name, homepage = extract_platform_info(url)
+			domain_name, homepage = extract_website_info(url)
 
 		# Extract username
 		url = r['Purchased from']
@@ -168,47 +201,15 @@ def process(csvrecords):
 	print('-'*10 + '|~ PLATFORMS ~|' + '-'*10)
 	pprint(platforms)
 
-	"""
-	# Platform users
-	for record in records:
-		platform = ...
-		user = PlatformUser(
-			username='',
-			platform=record['platform'],
-		)
-		user.save()
-		record['seller'] = user
 
-	if True:
-		price = TransactionAmount(
-			amount=,
-			currency=us_dollar,
-		)
-		price.save()
-
-		stack_entry = StackEntry(
-			ingot=ingot,
-			owner=admin,
-			purchase=tx,
-			bought_for=price,
-		)
-
-	ingots = set()
-	registered_weights = set()
-	for r in records:
-		mass_entry = registered_weights.add(r['Size (ozt)'])
-		ingots.add(r['Item'])
-
-	pprint(ingots)
-	pprint(registered_weights)
-	"""
-
-	# Create mass entries
-	"""
-	for m in registered_weights:
-		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
-		mass = Mass(number='', friendly_name='', unit='')
-	"""
+def extract_website_info(url):
+	parsed_url = urllib.parse.urlparse(url)
+	domain_name = parsed_url.netloc.split('.')[-2]
+	homepage = '{scheme}://{netloc}/'.format(
+		scheme=parsed_url.scheme,
+		netloc=parsed_url.netloc,
+	)
+	return domain_name, homepage
 
 
 if __name__ == '__main__':
@@ -454,7 +455,7 @@ class Currency(models.Model):
 			country=self.country,
 		)
 
-
+# Sale Platform Models
 class PlatformUser(models.Model):
 	stacktrack_user = models.ForeignKey(User, null=True)
 	username = models.CharField(max_length=80)
