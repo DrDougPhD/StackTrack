@@ -1,5 +1,5 @@
 import csv
-from pprint import pprint
+import pprint
 import urllib.parse
 
 
@@ -9,32 +9,10 @@ csv_filename = 'ag_tx.csv'
 def main():
 	with open(csv_filename) as csv_file:
 		records = csv.DictReader(csv_file)
-		pprint(records.fieldnames)
+		pprint.pprint(records.fieldnames)
 		print('-'*80)
 		process(records)
 
-GRAMS = ('gram', 'g', 0.0321543408)
-TROY_OUNCE = ('troy ounce', 'ozt', 1.0)
-MASS_CONVERSION = {
- '0.05': ('1/20 ozt', 0.05, TROY_OUNCE),
- '0.16': ('5 grams', 5.0, GRAMS),
- '0.466': ('14.5 grams', 14.5, GRAMS),
- '0.5': ('1/2 ozt', 1.0, TROY_OUNCE),
- '0.623': ('19.4 grams', 19.4, GRAMS),
- '0.643': ('20 grams', 20.0, GRAMS),
- '0.836': ('26 grams', 26.0, GRAMS),
- '0.877': ('27.3 grams', 27.3, GRAMS),
- '1': ('1 ozt', 1.0, TROY_OUNCE),
- '10': ('10 ozt', 10.0, TROY_OUNCE),
- '2': ('2 ozt', 2.0, TROY_OUNCE),
- '2.5': ('2.5 ozt', 2.5, TROY_OUNCE),
- '3': ('3 ozt', 3.0, TROY_OUNCE),
- '5': ('5 ozt', 5.0, TROY_OUNCE)
-}
-mass_entries = set()
-for mass in MASS_CONVERSION:
-	from_conversion = MASS_CONVERSION[mass]
-	mass_entries.add(from_conversion[:2])
 
 def process(csvrecords):
 	"""
@@ -65,12 +43,44 @@ def process(csvrecords):
 	process_shipping(records, us_dollar)
 	#process_masses(records)
 
-	registered_masses = {}
+	# Process masses
+	gram_to_ozt = {'name': 'gram', 'abbreviation': 'g', 'ozt_multiplier': 0.03215}
+	ozt_to_ozt = {'name': 'troy ounce', 'abbreviation': 'ozt', 'ozt_multiplier': 1.0}
+	units_of_mass = {
+		'gram': gram_to_ozt,
+		'troy ounce': ozt_to_ozt,
+	}
+	registered_weights = {}
 	for r in records:
-		pass
+		ozt = r['Size (ozt)']
+		g = r['Total unit weight (g)'] or None
+
+		# is this unit in grams or ozt?
+		if g:
+			registered_weights[ozt] = {
+				'number': float(g),
+				'friendly_name': '{} grams'.format(g),
+				'unit': gram_to_ozt,
+			}
+		else:
+			troy_ounces = float(ozt)
+			if troy_ounces >= 1:
+				friendly_name_number = troy_ounces
+			else:
+				fraction = int(1/troy_ounces)
+				friendly_name_number = '1/{}'.format(fraction)
+				
+			registered_weights[ozt] = {
+				'number': float(ozt),
+				'friendly_name': '{} ozt'.format(friendly_name_number),
+				'unit': ozt_to_ozt,
+			}
+
 
 	print('-'*10 + '|~ Mass ~|' + '-'*10)
-	pprint(registered_masses)
+	print('Units of mass: {}'.format(pprint.pformat(units_of_mass)))
+	print('-'*40)
+	pprint.pprint(registered_weights)
 
 	"""
 	# Ingot
@@ -126,8 +136,8 @@ def process(csvrecords):
 		mass_entry = registered_weights.add(r['Size (ozt)'])
 		ingots.add(r['Item'])
 
-	pprint(ingots)
-	pprint(registered_weights)
+	pprint.pprint(ingots)
+	pprint.pprint(registered_weights)
 	"""
 
 	# Create mass entries
@@ -229,11 +239,11 @@ def process_shipping(records, us_dollar):
 		r['tracking'] = t
 
 	print('-'*10 + '|~ Shipping ~|' + '-'*10)
-	pprint(shipping_companies)
+	pprint.pprint(shipping_companies)
 	print('-'*10 + '|~ Ship cost ~|' + '-'*10)
-	pprint(shipping_costs)
+	pprint.pprint(shipping_costs)
 	print('-'*10 + '|~ Tracking ~|' + '-'*10)
-	pprint(tracking_numbers)
+	pprint.pprint(tracking_numbers)
 
 
 def process_platforms(records):
@@ -331,9 +341,9 @@ def process_platforms(records):
 		"""
 
 	print('-'*10 + '|~ USERS ~|' + '-'*10)
-	pprint(users)
+	pprint.pprint(users)
 	print('-'*10 + '|~ PLATFORMS ~|' + '-'*10)
-	pprint(platforms)
+	pprint.pprint(platforms)
 
 
 def extract_website_info(url):
