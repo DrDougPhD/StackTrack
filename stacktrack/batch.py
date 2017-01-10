@@ -53,13 +53,17 @@ def process(csvrecords):
 
 		# detect ingot type from name
 		ingot_type = 'Not specified'
+		stop = False
 		for ingot_word in ingot_types:
 			for word in ingot_name.split():
 				if ingot_word in word.lower():
 					ingot_type = ingot_word
+					stop = True
 					break
 
-		"""
+			if stop:
+				break
+
 		if ingot_name in ingots:
 			ingot = ingots[ingot_name]
 
@@ -82,7 +86,6 @@ def process(csvrecords):
 			ingots[ingot_name] = ingot
 
 		r['ingot'] = ingot
-		"""
 
 	print('-'*10 + '|~ Ingots ~|' + '-'*10)
 	pprint.pprint(ingots)
