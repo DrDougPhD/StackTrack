@@ -1,3 +1,18 @@
+"""
+TODO
+
+* Interface with various websites
+	* ebay (public)
+	* ebay (account)
+	* Paypal
+	* reddit (public)
+	* reddit (account)
+	* Google Wallet
+	* Bank / credit card statements
+		* PDF?
+		* QuickBooks / portable format
+"""
+
 import csv
 import pprint
 import urllib.parse
@@ -98,6 +113,7 @@ def process(csvrecords):
 
 def process_posts(records):
 	# sale posts
+	transactions = {}
 	sale_posts = {}
 	for r in records:
 		url = r['Purchase message thread']
@@ -165,8 +181,38 @@ def process_posts(records):
 
 		r['sale_post'] = sale_post
 
+		# Transactions associated with sale post
+		ingot_bought_for = float(r['Bought for'])
+		if unique_id in transactions:
+			tx = transactions[unique_id]
+
+			# Update total price by including this item's price
+			tx['total_price'] += ingot_bought_for
+
+		else:
+			timestamp_str = r['Buy date']
+			if timestamp_str:
+				timestamp = datetime.strptime(
+					timestamp_str,
+					'%m/%d/%Y',
+				)
+			else:
+				timestamp = datetime(year=2015, month=1, day=1)
+
+			tx = {
+				'total_price': ingot_bought_for,
+				'shipping': r['tracking'],
+				'timestamp': timestamp,
+				'from_post': sale_post,
+			}
+			transactions[unique_id] = tx
+
+		r['transaction'] = tx
+
 	print('-'*10 + '|~ Sale posts ~|' + '-'*10)
 	pprint.pprint(sale_posts)
+	print('-'*10 + '|~ Transactions ~|' + '-'*10)
+	pprint.pprint(transactions)
 
 
 def process_ingots(records, admin):
