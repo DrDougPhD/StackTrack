@@ -34,7 +34,69 @@ def process(csvrecords):
 	process_shipping(records, us_dollar)
 	process_masses(records)
 	process_ingots(records, admin)
+	process_posts(records)
 
+
+	"""
+	# Stack Entry
+		ingot # done
+		owner # done
+		purchase
+		bought_for
+
+	# Purchase (Transaction)
+
+	# Purchase Amount (TransactionAmount, single ingot)
+		currency # done
+
+	# Platform User
+		platform # done
+
+	# Sale Post
+		platform # done
+		seller # done
+
+	# Total cost of transaction?
+		shipping # done
+		total_price
+		sale_post # above
+
+	"""
+	"""
+	if True:
+		price = TransactionAmount(
+			amount=,
+			currency=us_dollar,
+		)
+		price.save()
+
+		stack_entry = StackEntry(
+			ingot=ingot,
+			owner=admin,
+			purchase=tx,
+			bought_for=price,
+		)
+
+	ingots = set()
+	registered_weights = set()
+	for r in records:
+		mass_entry = registered_weights.add(r['Size (ozt)'])
+		ingots.add(r['Item'])
+
+	pprint.pprint(ingots)
+	pprint.pprint(registered_weights)
+	"""
+
+	# Create mass entries
+	"""
+	for m in registered_weights:
+		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
+		mass = Mass(number='', friendly_name='', unit='')
+	"""
+
+
+
+def process_posts(records):
 	# sale posts
 	sale_posts = {}
 	for r in records:
@@ -105,64 +167,6 @@ def process(csvrecords):
 
 	print('-'*10 + '|~ Sale posts ~|' + '-'*10)
 	pprint.pprint(sale_posts)
-
-	"""
-	# Stack Entry
-		ingot # done
-		owner # done
-		purchase
-		bought_for
-
-	# Purchase (Transaction)
-
-	# Purchase Amount (TransactionAmount, single ingot)
-		currency # done
-
-	# Platform User
-		platform # done
-
-	# Sale Post
-		platform # done
-		seller # done
-
-	# Total cost of transaction?
-		shipping # done
-		total_price
-		sale_post # above
-
-	"""
-	"""
-	if True:
-		price = TransactionAmount(
-			amount=,
-			currency=us_dollar,
-		)
-		price.save()
-
-		stack_entry = StackEntry(
-			ingot=ingot,
-			owner=admin,
-			purchase=tx,
-			bought_for=price,
-		)
-
-	ingots = set()
-	registered_weights = set()
-	for r in records:
-		mass_entry = registered_weights.add(r['Size (ozt)'])
-		ingots.add(r['Item'])
-
-	pprint.pprint(ingots)
-	pprint.pprint(registered_weights)
-	"""
-
-	# Create mass entries
-	"""
-	for m in registered_weights:
-		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
-		mass = Mass(number='', friendly_name='', unit='')
-	"""
-
 
 
 def process_ingots(records, admin):
