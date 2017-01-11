@@ -50,6 +50,26 @@ def process(csvrecords):
 	process_masses(records)
 	process_ingots(records, admin)
 	process_posts(records)
+	process_stack_entries(records, admin)
+
+
+def process_stack_entries(records, owner):
+	stack_entries = []
+	for r in records:
+		stack_entry = {
+			'ingot': r['ingot'],
+			'owner': owner,
+			'purchase': r['transaction'],
+			'bought_for': float(r['Bought for']),
+			'sale': None,
+			'sold_for': None,
+		}
+
+		stack_entries.append(stack_entry)
+		print('-'*10 + '|~ Stack Entry ~|' + '-'*10)
+		pprint.pprint(stack_entry)
+
+	return stack_entries
 
 
 	"""
@@ -118,50 +138,61 @@ def process_posts(records):
 	for r in records:
 		url = r['Purchase message thread']
 		if not url:
-			continue
+			unique_id = cleaned_url = r['Item']
+			url = None
 
-		domain_name, homepage = extract_website_info(url)
-		parsed_url = urllib.parse.urlparse(url)
+		else:
+			domain_name, homepage = extract_website_info(url)
+			parsed_url = urllib.parse.urlparse(url)
 
-		stripped_queries = lambda x: '{scheme}://{netloc}{path}'.format(
-			scheme=x.scheme,
-			netloc=x.netloc,
-			path=x.path
-		)
-		url_cleaners = {
-			'jmbullion': lambda x: x,
-			'ebay': stripped_queries,
-			'reddit': stripped_queries,
-			'apmex': stripped_queries,
-			'providentmetals': stripped_queries,
-			'qualitysilverbullion': stripped_queries,
-		}
-		cleaned_url = url_cleaners[domain_name](parsed_url)
+			stripped_queries = lambda x: '{scheme}://{netloc}{path}'.format(
+				scheme=x.scheme,
+				netloc=x.netloc,
+				path=x.path
+			)
+			url_cleaners = {
+				'jmbullion': lambda x: x,
+				'ebay': stripped_queries,
+				'reddit': stripped_queries,
+				'apmex': stripped_queries,
+				'providentmetals': stripped_queries,
+				'qualitysilverbullion': stripped_queries,
+				'paypal': lambda x: x,
+			}
+			cleaned_url = url_cleaners[domain_name](parsed_url)
 
-		before_last_forward_slash = lambda x: x.path.split('/')[-2]
-		last_entry_in_path = lambda x: os.path.basename(x.path)
-		first_query_parameter = lambda x: urllib.parse.parse_qsl(x.query)[0][1]
-		def reddit_id_extractor(x):
-			if 'message' in x.path:
-				return last_entry_in_path(x)
+			before_last_forward_slash = lambda x: x.path.split('/')[-2]
+			last_entry_in_path = lambda x: os.path.basename(x.path)
+			first_query_parameter = lambda x: urllib.parse.parse_qsl(x.query)[0][1]
+			last_query_parameter = lambda x: urllib.parse.parse_qsl(x.query)[-1][1]
+			def paypal_id_extractor(x):
+				if x.query:
+					return last_query_parameter(x)
+				else:
+					return os.path.basename(x.path).split('=')[-1]
 
-			else:
-				return before_last_forward_slash(x)
+			def reddit_id_extractor(x):
+				if 'message' in x.path:
+					return last_entry_in_path(x)
 
-		extractors = defaultdict(lambda x: x)
-		extractors.update({
-			'ebay': last_entry_in_path,
-			'jmbullion': before_last_forward_slash,
-			'providentmetals': before_last_forward_slash,
-			'reddit': reddit_id_extractor,
-			'qualitysilverbullion': last_entry_in_path,
-			'apmex': last_entry_in_path,
-			'jmbullion': first_query_parameter,
-		})
-		unique_id  = extractors[domain_name](parsed_url)
+				else:
+					return before_last_forward_slash(x)
+
+			extractors = defaultdict(lambda x: x)
+			extractors.update({
+				'ebay': last_entry_in_path,
+				'jmbullion': before_last_forward_slash,
+				'providentmetals': before_last_forward_slash,
+				'reddit': reddit_id_extractor,
+				'qualitysilverbullion': last_entry_in_path,
+				'apmex': last_entry_in_path,
+				'jmbullion': first_query_parameter,
+				'paypal': paypal_id_extractor,
+			})
+			unique_id  = extractors[domain_name](parsed_url)
 
 		# cleaned_url = ...
-		#print(unique_id)
+		#print('{0}:\t{1}'.format(domain_name, unique_id))
 		#print('\t\t\t\t{}'.format(cleaned_url))
 
 		if unique_id in sale_posts:
@@ -358,7 +389,7 @@ def process_shipping(records, us_dollar):
 		tracking = r['Purchase tracking']
 		if tracking:
 			domain_name, homepage = extract_website_info(tracking)
-			print('{domain_name}:\t{homepage}'.format(**locals()))
+			#print('{domain_name}:\t{homepage}'.format(**locals()))
 
 		else:
 			domain_name, homepage = ('Not specified', None)
@@ -388,7 +419,7 @@ def process_shipping(records, us_dollar):
 				'Tracking URL has more than one query'
 				' parameters: {}').format(tracking)
 			tracking_num = query_params[0][1]
-			print(tracking_num)
+			#print(tracking_num)
 
 		else:
 			tracking_num = 'None specified'
@@ -433,6 +464,7 @@ def process_platforms(records):
 			'jmbullion': lambda x: 'JM Bullion',
 			'providentmetals': lambda x: 'Provident Metals',
 			'qualitysilverbullion': lambda x: 'QSB: Quality Silver Bullion',
+			'paypal': lambda x: 'Paypal',
 		}
 		username = extractors[platform_name](url)
 		print('{username}:\t {platform_name}'.format(**locals()))
