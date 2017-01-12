@@ -72,65 +72,6 @@ def process_stack_entries(records, owner):
 	return stack_entries
 
 
-	"""
-	# Stack Entry
-		ingot # done
-		owner # done
-		purchase
-		bought_for
-
-	# Purchase (Transaction)
-
-	# Purchase Amount (TransactionAmount, single ingot)
-		currency # done
-
-	# Platform User
-		platform # done
-
-	# Sale Post
-		platform # done
-		seller # done
-
-	# Total cost of transaction?
-		shipping # done
-		total_price
-		sale_post # above
-
-	"""
-	"""
-	if True:
-		price = TransactionAmount(
-			amount=,
-			currency=us_dollar,
-		)
-		price.save()
-
-		stack_entry = StackEntry(
-			ingot=ingot,
-			owner=admin,
-			purchase=tx,
-			bought_for=price,
-		)
-
-	ingots = set()
-	registered_weights = set()
-	for r in records:
-		mass_entry = registered_weights.add(r['Size (ozt)'])
-		ingots.add(r['Item'])
-
-	pprint.pprint(ingots)
-	pprint.pprint(registered_weights)
-	"""
-
-	# Create mass entries
-	"""
-	for m in registered_weights:
-		mass_unit = UnitOfMass(name='', abbreviation='', ozt_multiplier='')
-		mass = Mass(number='', friendly_name='', unit='')
-	"""
-
-
-
 def process_posts(records):
 	# sale posts
 	transactions = {}
@@ -247,7 +188,10 @@ def process_posts(records):
 
 
 def process_ingots(records, admin):
-	three_nines_fine = '.999 fine (three nines)' #Fineness(friendly_name='.999 fine (three nines)')
+	three_nines_fine = {
+		'multiplier': 1.0,
+		'friendly_name': '.999 fine (three nines)',
+	}  #Fineness(friendly_name='.999 fine (three nines)')
 	# fineness.save()
 	ingot_types = [
 		'bar', #IngotType(name='bar'),
@@ -326,7 +270,7 @@ def process_masses(records):
 					'number': float(g),
 					'friendly_name': '{} grams'.format(g),
 					'unit': gram_to_ozt,
-			} 
+				} 
 			else:
 				troy_ounces = float(ozt)
 				if troy_ounces >= 1:
@@ -379,7 +323,10 @@ def process_shipping(records, us_dollar):
 			)
 			shipping_tx.save()
 			"""
-			shipping_tx = (shipping_cost, us_dollar)
+			shipping_tx = {
+				'amount': shipping_cost,
+				'currency': us_dollar,
+			}
 			shipping_costs[shipping_cost] = shipping_tx
 
 		r['shipping_cost'] = shipping_tx
@@ -406,7 +353,10 @@ def process_shipping(records, us_dollar):
 			)
 			s.save()
 			"""
-			s = (domain_name, homepage)
+			s = {
+				'company_name': domain_name,
+				'url': homepage,
+			}
 			shipping_companies[domain_name] = s
 
 		r['shipping_company'] = s
@@ -436,7 +386,11 @@ def process_shipping(records, us_dollar):
 			)
 			t.save()
 			"""
-			t = (s, shipping_tx, tracking_num)
+			t = {
+				'shipping_company': s,
+				'price': shipping_tx,
+				'tracking': tracking_num,
+			}
 			tracking_numbers[tracking_num] = t
 
 		r['tracking'] = t
@@ -511,7 +465,10 @@ def process_platforms(records):
 			)
 			p.save()
 			"""
-			p = (platform_name, homepage)
+			p = {
+				'name': platform_name,
+				'homepage': homepage,
+			}
 			platforms[platform_name] = p
 
 		record['platform'] = p
@@ -528,7 +485,10 @@ def process_platforms(records):
 			u.save()
 
 			"""
-			u = (username, p)
+			u = {
+				'username': username,
+				'platform': p,
+			}
 			users[username] = u
 
 		record['seller'] = u

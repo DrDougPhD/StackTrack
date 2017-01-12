@@ -203,38 +203,17 @@ class StackEntry(models.Model):
 		)
 
 
-class TransactionAmount(models.Model):
-	amount = models.DecimalField(
-		max_digits=20,
-		decimal_places=10,
-	)
-	currency = models.ForeignKey('Currency')
-	original_currency_amount = models.ForeignKey('TransactionAmount',
-		null=True,
-	)
+class Platform(models.Model):
+	name = models.CharField(max_length=80)
+	homepage = models.URLField(max_length=80, null=True)
+	user_url_fmt = models.URLField(null=True)
+	post_url_fmt = models.URLField(null=True)
+	logo = CloudinaryField('image', null=True)
 
 	def __str__(self):
-		return '{symbol}{amount}'.format(
-			symbol=self.currency.symbol,
-			amount=self.amount,
-		)
-
-
-class Currency(models.Model):
-	name = models.CharField(max_length=30)
-	abbreviation = models.CharField(max_length=5)
-	symbol = models.CharField(max_length=1)
-	country = models.CharField(max_length=30)
-
-	class Meta:
-		verbose_name_plural = 'currencies'
-
-	def __str__(self):
-		return '{name} ({sym}, {abbr}, {country})'.format(
+		return '{name} - {url}'.format(
 			name=self.name,
-			abbr=self.abbreviation,
-			sym=self.symbol,
-			country=self.country,
+			url=self.homepage,
 		)
 
 
@@ -260,20 +239,6 @@ class PlatformUser(models.Model):
 			username=self.username,
 			platform=self.platform.name,
 			phantom=self.phantom,
-		)
-
-
-class Platform(models.Model):
-	name = models.CharField(max_length=80)
-	homepage = models.URLField(max_length=80, null=True)
-	user_url_fmt = models.URLField(null=True)
-	post_url_fmt = models.URLField(null=True)
-	logo = CloudinaryField('image', null=True)
-
-	def __str__(self):
-		return '{name} - {url}'.format(
-			name=self.name,
-			url=self.homepage,
 		)
 
 
@@ -318,6 +283,41 @@ class Transaction(models.Model):
 		return '{price} + {shipping} S/H'.format(
 			price=self.total_price,
 			shipping=self.shipping.price,
+		)
+
+
+class TransactionAmount(models.Model):
+	amount = models.DecimalField(
+		max_digits=20,
+		decimal_places=10,
+	)
+	currency = models.ForeignKey('Currency')
+	original_currency_amount = models.ForeignKey('TransactionAmount',
+		null=True,
+	)
+
+	def __str__(self):
+		return '{symbol}{amount}'.format(
+			symbol=self.currency.symbol,
+			amount=self.amount,
+		)
+
+
+class Currency(models.Model):
+	name = models.CharField(max_length=30)
+	abbreviation = models.CharField(max_length=5)
+	symbol = models.CharField(max_length=1)
+	country = models.CharField(max_length=30)
+
+	class Meta:
+		verbose_name_plural = 'currencies'
+
+	def __str__(self):
+		return '{name} ({sym}, {abbr}, {country})'.format(
+			name=self.name,
+			abbr=self.abbreviation,
+			sym=self.symbol,
+			country=self.country,
 		)
 
 
