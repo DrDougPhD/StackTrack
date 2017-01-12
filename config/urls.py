@@ -13,5 +13,6 @@ import stacktrack.views
 urlpatterns = [
 	url(r'^$', stacktrack.views.index, name='index'),
 	url(r'^db', stacktrack.views.db, name='db'),
+	url(r'^stack', stacktrack.views.batch, name='stack'),
 	url(r'^admin/', include(admin.site.urls)),
 ]

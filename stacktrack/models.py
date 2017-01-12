@@ -238,7 +238,7 @@ class Platform(models.Model):
 	homepage = models.URLField(max_length=80, null=True)
 	user_url_fmt = models.URLField(null=True)
 	post_url_fmt = models.URLField(null=True)
-	logo = CloudinaryField('image', null=True)
+	logo = CloudinaryField('logo', null=True)
 
 	def __str__(self):
 		return '{name} - {url}'.format(

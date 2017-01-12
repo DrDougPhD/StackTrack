@@ -22,3 +22,8 @@ def db(request):
 
 	return render(request, 'db.html', {'finenesses': finenesses})
 
+
+def batch(request):
+
+	return HttpResponse('Hello!') #render(request, 'stack.html', locals())
+
