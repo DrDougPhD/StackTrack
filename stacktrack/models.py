@@ -4,6 +4,8 @@ from django.utils import timezone
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 
+ADMIN_USER = 1
+
 
 class Ingot(models.Model):
 	name = models.CharField(max_length=80)
@@ -39,7 +41,7 @@ class Ingot(models.Model):
 	)
 
 	# Foreign fields
-	posted_by = models.ForeignKey(User, editable=False)
+	posted_by = models.ForeignKey(User, editable=False, default=ADMIN_USER)
 	fineness = models.ForeignKey('Fineness')
 	mass = models.ForeignKey('Mass')
 	ingot_type = models.ForeignKey('IngotType')
