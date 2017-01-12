@@ -4,8 +4,6 @@ from django.utils import timezone
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 
-ADMIN_USER = 1
-
 
 class Ingot(models.Model):
 	name = models.CharField(max_length=80)
@@ -41,7 +39,10 @@ class Ingot(models.Model):
 	)
 
 	# Foreign fields
-	posted_by = models.ForeignKey(User, editable=False, default=ADMIN_USER)
+	posted_by = models.ForeignKey(User,
+		editable=False,
+		on_delete=models.SET_NULL,
+	)
 	fineness = models.ForeignKey('Fineness')
 	mass = models.ForeignKey('Mass')
 	ingot_type = models.ForeignKey('IngotType')
@@ -87,7 +88,10 @@ ONE_TROY_OZ = 31.1
 class Mass(models.Model):
 	number = models.FloatField(default=1.0)
 	friendly_name = models.CharField(max_length=80)
-	unit = models.ForeignKey('UnitOfMass')
+	unit = models.ForeignKey('UnitOfMass',
+		on_delete=models.SET_NULL,
+		null=True,
+	)
 
 	class Meta:
 		verbose_name_plural = "weights"
@@ -139,8 +143,14 @@ class Image(models.Model):
 		choices=SIDE_OF_INGOT,
 		default=OBVERSE,
 	)
-	ingot = models.ForeignKey('Ingot', null=True)
-	from_post = models.ForeignKey('SalePost', null=True)
+	ingot = models.ForeignKey('Ingot',
+		null=True,
+		on_delete=models.SET_NULL
+	)
+	from_post = models.ForeignKey('SalePost',
+		null=True,
+		on_delete=models.SET_NULL
+	)
 
 	def truncated_url(self):
 		url = 'http://example.com/stuff/image.jpg'
@@ -162,9 +172,13 @@ class Image(models.Model):
 class PrimaryImage(models.Model):
 	obverse_image = models.ForeignKey('Image',
 		related_name='obverse_img',
+		null=True,
+		on_delete=models.SET_NULL,
 	)
 	reverse_image = models.ForeignKey('Image',
 		related_name='reverse_img',
+		null=True,
+		on_delete=models.SET_NULL,
 	)
 
 	def __str__(self):
@@ -175,23 +189,36 @@ class PrimaryImage(models.Model):
 
 
 class StackEntry(models.Model):
-	ingot = models.ForeignKey('Ingot')
-	owner = models.ForeignKey(User, editable=False)
+	ingot = models.ForeignKey('Ingot',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
+	owner = models.ForeignKey(User,
+		editable=False,
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 
 	purchase = models.ForeignKey('Transaction',
 		related_name='into_stack',
+		null=True,
+		on_delete=models.SET_NULL,
 	)
 	bought_for = models.ForeignKey('TransactionAmount',
 		related_name='into_stack',
+		null=True,
+		on_delete=models.SET_NULL,
 	)
 
 	sale = models.ForeignKey('Transaction',
 		related_name='from_stack',
 		null=True,
+		on_delete=models.SET_NULL,
 	)
 	sold_for = models.ForeignKey('TransactionAmount',
 		related_name='from_stack',
 		null=True,
+		on_delete=models.SET_NULL,
 	)
 
 	class Meta:
@@ -220,10 +247,16 @@ class Platform(models.Model):
 
 
 class PlatformUser(models.Model):
-	stacktrack_user = models.ForeignKey(User, null=True)
+	stacktrack_user = models.ForeignKey(User,
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 	username = models.CharField(max_length=80)
 	user_id = models.CharField(max_length=40, null=True)
-	platform = models.ForeignKey('Platform')
+	platform = models.ForeignKey('Platform',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 
 	PHANTOM_USER = True
 	REGISTERED_USER = False
@@ -247,10 +280,17 @@ class PlatformUser(models.Model):
 class SalePost(models.Model):
 	title = models.CharField(max_length=300)
 	description = models.TextField(default='')
-	platform = models.ForeignKey('Platform')
-	seller = models.ForeignKey('PlatformUser')
+	platform = models.ForeignKey('Platform',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
+	seller = models.ForeignKey('PlatformUser',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 	ebay_post_attributes = models.ForeignKey('EbayPostAttributes',
-		null=True
+		null=True,
+		on_delete=models.SET_NULL,
 	)
 	date_listed = models.DateTimeField(default=datetime.now)
 	access_id = models.CharField(max_length=20)
@@ -275,11 +315,20 @@ class EbayPostAttributes(models.Model):
 
 
 class Transaction(models.Model):
-	total_price = models.ForeignKey('TransactionAmount')
-	shipping = models.ForeignKey('Shipping')
+	total_price = models.ForeignKey('TransactionAmount',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
+	shipping = models.ForeignKey('Shipping',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 	# rewards/discount = ...
 	timestamp = models.DateTimeField(default=datetime.now)
-	from_post = models.ForeignKey('SalePost', null=True)
+	from_post = models.ForeignKey('SalePost',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 
 	def __str__(self):
 		return '{price} + {shipping} S/H'.format(
@@ -293,9 +342,13 @@ class TransactionAmount(models.Model):
 		max_digits=20,
 		decimal_places=10,
 	)
-	currency = models.ForeignKey('Currency')
+	currency = models.ForeignKey('Currency',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 	original_currency_amount = models.ForeignKey('TransactionAmount',
 		null=True,
+		on_delete=models.SET_NULL,
 	)
 
 	def __str__(self):
@@ -324,8 +377,14 @@ class Currency(models.Model):
 
 
 class Shipping(models.Model):
-	shipping_company = models.ForeignKey('ShippingCompany')
-	price = models.ForeignKey('TransactionAmount')
+	shipping_company = models.ForeignKey('ShippingCompany',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
+	price = models.ForeignKey('TransactionAmount',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 	tracking = models.CharField(max_length=30, default='N/A')
 
 	class Meta:
@@ -355,7 +414,10 @@ class ShippingStatus(models.Model):
 	timestamp = models.DateTimeField()
 	location = models.CharField(max_length=80)
 	note = models.CharField(max_length=160, default='')
-	shipping = models.ForeignKey('Shipping')
+	shipping = models.ForeignKey('Shipping',
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 
 	class Meta:
 		verbose_name_plural = 'shipping status updates'
