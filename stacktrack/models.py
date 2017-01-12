@@ -41,6 +41,7 @@ class Ingot(models.Model):
 	# Foreign fields
 	posted_by = models.ForeignKey(User,
 		editable=False,
+		null=True,
 		on_delete=models.SET_NULL,
 	)
 	fineness = models.ForeignKey('Fineness')
