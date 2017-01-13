@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.contrib.auth.models import User
 
 from .models import Fineness
 
@@ -23,7 +24,9 @@ def db(request):
 
 
 def dashboard(request):
-	return render(request, 'stack.html')
+	return render(request, 'stack.html', {
+		'username': User.objects.all()[0].username
+	})
 	#return render(request, 'dashboard.html')
 
 
