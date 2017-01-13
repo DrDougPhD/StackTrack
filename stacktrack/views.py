@@ -23,7 +23,7 @@ def db(request):
 
 
 def dashboard(request):
-	return render(request, 'stach.html')
+	return render(request, 'stack.html')
 	#return render(request, 'dashboard.html')
 
 
