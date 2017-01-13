@@ -29,8 +29,7 @@ def dashboard(request):
 	})
 	#return render(request, 'dashboard.html')
 
-
+from .batch import main
 def batch(request):
-
 	return HttpResponse('Hello!') #render(request, 'stack.html', locals())
 
