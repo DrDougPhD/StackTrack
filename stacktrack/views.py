@@ -23,7 +23,8 @@ def db(request):
 
 
 def dashboard(request):
-	return render(request, 'stack.html')
+	return render(request, 'stach.html')
+	#return render(request, 'dashboard.html')
 
 
 def batch(request):
