@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 
 from .models import Fineness
+from .models import StackEntry
 
 # Create your views here.
 def index(request):
@@ -14,18 +15,14 @@ def index(request):
 
 
 def db(request):
-
-	three_nines = Fineness(multiplier=1.0, friendly_name='.999 fine')
-	three_nines.save()
-
-	finenesses = Fineness.objects.all()
-
-	return render(request, 'db.html', {'finenesses': finenesses})
+	return render(request, 'db.html', {'finenesses': ''})
 
 
 def dashboard(request):
+	user = User.objects.all()[0]
+	stack_entries = StackEntry.objects.filter(owner=user).order_by('-purchase_id')
 	return render(request, 'stack.html', {
-		'username': User.objects.all()[0].username
+		'stack_entries': stack_entries
 	})
 	#return render(request, 'dashboard.html')
 
