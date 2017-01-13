@@ -22,6 +22,10 @@ def db(request):
 	return render(request, 'db.html', {'finenesses': finenesses})
 
 
+def dashboard(request):
+	return render(request, 'stack.html')
+
+
 def batch(request):
 
 	return HttpResponse('Hello!') #render(request, 'stack.html', locals())
