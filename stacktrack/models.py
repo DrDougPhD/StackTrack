@@ -226,7 +226,7 @@ class StackEntry(models.Model):
 		verbose_name_plural = 'stack entries'
 
 	def __str__(self):
-		return '{user} - {price} - {ingot}'.format(
+		return '{user} - {price:.2f} - {ingot}'.format(
 			user=self.owner,
 			price=self.bought_for,
 			ingot=self.ingot.name,
