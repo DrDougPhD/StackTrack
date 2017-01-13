@@ -353,7 +353,7 @@ class TransactionAmount(models.Model):
 	)
 
 	def __str__(self):
-		return '{symbol}{amount}'.format(
+		return '{symbol}{amount:.2f}'.format(
 			symbol=self.currency.symbol,
 			amount=self.amount,
 		)

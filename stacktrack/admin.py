@@ -22,7 +22,7 @@ class FinenessAdmin(admin.ModelAdmin):
 from .models import Mass
 @admin.register(Mass)
 class MassAdmin(admin.ModelAdmin):
-	list_display = ('unit', 'number', 'friendly_name')
+	list_display = ('friendly_name', 'unit', 'number')
 
 
 from .models import UnitOfMass

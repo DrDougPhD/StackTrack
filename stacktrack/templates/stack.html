@@ -48,7 +48,7 @@
 					<td>{{ entry.purchase.timestamp|date:"Y-m-d" }}</td>
 					<td>{{ entry.ingot.name }}</td>
 					<td>{{ entry.bought_for }}</td>
-					<td>{{ entry.ingot.mass.number }} {{ entry.ingot.mass.unit.name }}</td>
+					<td>{{ entry.ingot.mass.friendly_name }}</td>
 					<td>
 					{% if entry.sold_for %}
 						{{ entry.sold_for }}
