@@ -19,11 +19,17 @@ import urllib.parse
 from datetime import datetime
 import os
 from collections import defaultdict
+import logging
+logger = logging.getLogger('batch')
 
-csv_filename = 'ag_tx.csv'
+csv_filename = os.path.join(
+	os.path.dirname(os.path.abspath(__file__)),
+	'ag_tx.csv'
+)
 
 
 def main():
+	logger.info('Test')
 	with open(csv_filename) as csv_file:
 		records = csv.DictReader(csv_file)
 		pprint.pprint(records.fieldnames)
@@ -67,21 +73,28 @@ def process(csvrecords):
 	process_shipping(records, us_dollar)
 	process_masses(records)
 	process_ingots(records, admin)
-	process_posts(records)
-	process_stack_entries(records, admin)
+	process_posts(records, us_dollar)
+	process_stack_entries(records, admin, us_dollar)
+	return records
 
 
-def process_stack_entries(records, owner):
+def process_stack_entries(records, owner, us_dollar):
 	stack_entries = []
 	for r in records:
+		tx = TransactionAmount(
+			amount=float(r['Bought for']),
+			currency=us_dollar,
+		)
+		tx.save()
 		stack_entry = StackEntry(**{
 			'ingot': r['ingot'],
 			'owner': owner,
 			'purchase': r['transaction'],
-			'bought_for': float(r['Bought for']),
+			'bought_for': tx,
 			'sale': None,
 			'sold_for': None,
 		})
+		stack_entry.save()
 
 		stack_entries.append(stack_entry)
 		print('-'*10 + '|~ Stack Entry ~|' + '-'*10)
@@ -90,7 +103,7 @@ def process_stack_entries(records, owner):
 	return stack_entries
 
 
-def process_posts(records):
+def process_posts(records, us_dollar):
 	# sale posts
 	transactions = {}
 	sale_posts = {}
@@ -98,7 +111,7 @@ def process_posts(records):
 		url = r['Purchase message thread']
 		if not url:
 			unique_id = cleaned_url = r['Item']
-			url = None
+			url = 'N/A'
 
 		else:
 			domain_name, homepage = extract_website_info(url)
@@ -178,8 +191,7 @@ def process_posts(records):
 			tx = transactions[unique_id]
 
 			# Update total price by including this item's price
-			tx.total_price += ingot_bought_for
-			tx.save()
+			tx['total_price'] += ingot_bought_for
 
 		else:
 			timestamp_str = r['Buy date']
@@ -191,20 +203,35 @@ def process_posts(records):
 			else:
 				timestamp = datetime(year=2015, month=1, day=1)
 
-			tx = Transactions(**{
+			tx = {
 				'total_price': ingot_bought_for,
 				'shipping': r['tracking'],
 				'timestamp': timestamp,
 				'from_post': sale_post,
-			})
-			tx.save()
+			}
 			transactions[unique_id] = tx
 
 		r['transaction'] = tx
+		r['tx_id'] = unique_id
 
 	print('-'*10 + '|~ Sale posts ~|' + '-'*10)
 	pprint.pprint(sale_posts)
 	print('-'*10 + '|~ Transactions ~|' + '-'*10)
+	saved_txs = {}
+	for t in transactions:
+		tx_amount = TransactionAmount(
+			amount=transactions[t]['total_price'],
+			currency=us_dollar,
+		)
+		tx_amount.save()
+		transactions[t]['total_price'] = tx_amount
+		transaction = Transaction(**transactions[t])
+		transaction.save()
+		saved_txs[t] = transaction
+
+	for r in records:
+		r['transaction'] = saved_txs[r['tx_id']]
+
 	pprint.pprint(transactions)
 
 
@@ -213,7 +240,7 @@ def process_ingots(records, admin):
 		'multiplier': 1.0,
 		'friendly_name': '.999 fine (three nines)',
 	})  #Fineness(friendly_name='.999 fine (three nines)')
-	fineness.save()
+	three_nines_fine.save()
 	bar = IngotType(name='bar')
 	_round = IngotType(name='round')
 	coin = IngotType(name='coin')
@@ -378,7 +405,7 @@ def process_shipping(records, us_dollar):
 			#print('{domain_name}:\t{homepage}'.format(**locals()))
 
 		else:
-			domain_name, homepage = ('Not specified', None)
+			domain_name, homepage = ('Not specified', 'N/A')
 
 		if domain_name in shipping_companies:
 			s = shipping_companies[domain_name]

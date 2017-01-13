@@ -31,5 +31,8 @@ def dashboard(request):
 
 from .batch import main
 def batch(request):
-	return HttpResponse('Hello!') #render(request, 'stack.html', locals())
+	processed = main()
+	import pprint
+	processd_pretty = pprint.pformat(processed)
+	return render(request, 'batch.html', { 'data': processd_pretty })
 

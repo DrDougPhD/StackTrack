@@ -15,7 +15,7 @@ class Ingot(models.Model):
 		null=True
 	)
 	date_posted = models.DateTimeField(
-		default=datetime.now,
+		default=timezone.now,
 	)
 
 	SILVER =	'Ag'
@@ -274,7 +274,7 @@ class PlatformUser(models.Model):
 		return '{username}@{platform} ({phantom})'.format(
 			username=self.username,
 			platform=self.platform.name,
-			phantom=self.phantom,
+			phantom=self.is_phantom,
 		)
 
 
@@ -293,7 +293,7 @@ class SalePost(models.Model):
 		null=True,
 		on_delete=models.SET_NULL,
 	)
-	date_listed = models.DateTimeField(default=datetime.now)
+	date_listed = models.DateTimeField(default=timezone.now)
 	access_id = models.CharField(max_length=20)
 
 	def __str__(self):
@@ -325,7 +325,7 @@ class Transaction(models.Model):
 		on_delete=models.SET_NULL,
 	)
 	# rewards/discount = ...
-	timestamp = models.DateTimeField(default=datetime.now)
+	timestamp = models.DateTimeField(default=timezone.now)
 	from_post = models.ForeignKey('SalePost',
 		null=True,
 		on_delete=models.SET_NULL,
