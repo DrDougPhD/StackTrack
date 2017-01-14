@@ -73,20 +73,108 @@
 -->
 
 	<!-- Stack summary: dollar cost average, qty, weight, purchases, profits -->
+<!--	<div class="text-center">
+	<table class="table">
+		<tr class="success">
+			<th>Dollar-Cost Average</th>
+			<th>Weight</th>
+			<th>Quantity</th>
+			<th>Purchases</th>
+			<th>Sales</th>
+			<th>Profits</th>
+		</tr>
+		<tr class="success">
+			<td>${{ cost_per_ozt | floatformat:2 }} / ozt</td>
+			<td>{{ weight | floatformat }} ozt</td>
+			<td>{{ qty }} ingots</td>
+			<td>${{ purchases | floatformat:2 }}</td>
+			<td>${{ sales | floatformat:2 }}</td>
+			<td>${{ profits | floatformat:2 }}</td>
+		</tr>
+	</table>
+	</div>-->
+
+	{% comment "Grids for aggregate values" %}
+		http://dsmorse.github.io/gridster.js/
+	{% endcomment %}
 	<div class="container-fluid">
 		<div class="row text-center">
-			<div class="col-md-3 debug">${{ cost_per_ozt | floatformat:2 }} / ozt</div>
+					<div class="col-md-2 debug">
+						<div>Dollar-Cost Average</div>
+						<hr class="thin">
+						<div>${{ cost_per_ozt | floatformat:2 }} / ozt</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Weight</div>
+						<hr class="thin">
+						<div>{{ weight | floatformat }} ozt</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Quantity</div>
+						<hr class="thin">
+						<div>{{ qty }} ingots</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Purchases</div>
+						<hr class="thin">
+						<div>${{ purchases | floatformat:2 }}</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Sales</div>
+						<hr class="thin">
+						<div>${{ sales | floatformat:2 }}</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Profits</div>
+						<hr class="thin">
+						<div>${{ profits | floatformat:2 }}</div>
+					</div>
+		</div>
+	</div>
+
+
+<!--	<div class="container-fluid">
+		<div class="row text-center">
+			<div class="col-md-3 debug">
+				<div class="row">
+					<div class="col-md-12 debug">
+						<div>Dollar-Cost Average</div>
+						<hr class="thin">
+						<div>${{ cost_per_ozt | floatformat:2 }} / ozt</div>
+					</div>
+				</div>
+			</div>
 			<div class="col-md-9 debug">
 				<div class="row">
-					<div class="col-md-2 debug">{{ weight | floatformat }} ozt</div>
-					<div class="col-md-2 debug">{{ qty }} ingots</div>
-					<div class="col-md-3 debug">Purchases: ${{ purchases | floatformat:2 }}</div>
-					<div class="col-md-2 debug">Sales: ${{ sales | floatformat:2 }}</div>
-					<div class="col-md-3 debug">Profits: ${{ profits | floatformat:2 }}</div>
+					<div class="col-md-2 debug">
+						<div>Weight</div>
+						<hr class="thin">
+						<div>{{ weight | floatformat }} ozt</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Quantity</div>
+						<hr class="thin">
+						<div>{{ qty }} ingots</div>
+					</div>
+					<div class="col-md-3 debug">
+						<div>Purchases</div>
+						<hr class="thin">
+						<div>${{ purchases | floatformat:2 }}</div>
+					</div>
+					<div class="col-md-2 debug">
+						<div>Sales</div>
+						<hr class="thin">
+						<div>${{ sales | floatformat:2 }}</div>
+					</div>
+					<div class="col-md-3 debug">
+						<div>Profits</div>
+						<hr class="thin">
+						<div>${{ profits | floatformat:2 }}</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</div>-->
 
 <!-- Removing the image placeholders 
 	<div class="row placeholders">
