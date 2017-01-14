@@ -86,15 +86,18 @@ def main(args):
 
 
 import requests
-from bs4 import BeautifulSoup
+from lxml import html
 ASSUMPTIONS_TESTED = False
-def test_parsing_assumptions(html):
+def test_parsing_assumptions(page):
 	# Page contains a "page-container" div with "http://schema.org/Product" itemtype.
-	assert len(html.body.main.find_all(class_='page-container')) >= 1,\
+	containers = page.xpath('/html/body/main/div[1]')
+	assert len(containers) >= 1,\
 		'No expected div class for entire product info'
 
-	assert html.body.main.find_all(class_='page-container')[0]['itemtype'] == 'http://schema.org/Product',\
+	product_container = containers[0]
+	assert product_container.get('itemtype') == 'http://schema.org/Product',\
 		'First page-container is not of type http://schema.org/Product'
+
 
 
 def download_product_page(product_id):
@@ -104,11 +107,11 @@ def download_product_page(product_id):
 	# If page not found, raise an exception and stop processing.
 	r.raise_for_status()
 
-	html = BeautifulSoup(r.text, 'lxml')
+	page = html.fromstring(r.text)
 
 	global ASSUMPTIONS_TESTED
 	if not ASSUMPTIONS_TESTED:
-		test_parsing_assumptions(html)
+		test_parsing_assumptions(page)
 		ASSUMPTIONS_TESTED = True
 
 	return
