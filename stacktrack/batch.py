@@ -22,14 +22,18 @@ from collections import defaultdict
 import logging
 logger = logging.getLogger('batch')
 
+DATA_DIRECTORY = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    os.pardir,
+    'data',
+)) 
 csv_filename = os.path.join(
-	os.path.dirname(os.path.abspath(__file__)),
-	'ag_tx.csv'
+    DATA_DIRECTORY,
+    'ag_tx.csv'
 )
 
 
 def main():
-	logger.info('Test')
 	with open(csv_filename) as csv_file:
 		records = csv.DictReader(csv_file)
 		pprint.pprint(records.fieldnames)
