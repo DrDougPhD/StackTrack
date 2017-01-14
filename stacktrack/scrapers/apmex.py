@@ -59,6 +59,8 @@ logger = logging.getLogger(__appname__)
 PRODUCT_URL_FMT = 'http://www.apmex.com/product/{i}/'
 SEARCH_MAX = 120000
 def main(args):
+	webpage = download_product_page(SEARCH_MAX)
+
 	"""
 	for i in range(SEARCH_MAX):
 		webpage = download_product_page(i)
@@ -70,6 +72,14 @@ def main(args):
 		save(product_info)
 		download_images(i, product_info)
 	"""
+
+import requests
+from bs4 import BeautifulSoup
+def download_product_page(product_id):
+	logger.info('Download product #{}'.format(product_id))
+	r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
+	html = BeautifulSoup(r.text, 'lxml')
+	print(html.prettify())
 
 
 def setup_logger(args):
