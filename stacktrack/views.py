@@ -20,7 +20,8 @@ def db(request):
 
 def dashboard(request):
 	user = User.objects.all()[0]
-	stack_entries = StackEntry.objects.filter(owner=user).order_by('-purchase_id')
+	stack_entries = StackEntry.objects.filter(owner=user)\
+		.order_by('-purchase__timestamp')
 	return render(request, 'stack.html', {
 		'stack_entries': stack_entries
 	})

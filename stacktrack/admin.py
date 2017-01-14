@@ -64,7 +64,7 @@ class TransactionAmountAdmin(admin.ModelAdmin):
 from .models import Currency
 @admin.register(Currency)
 class CurrencyAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('symbol', 'name', 'abbreviation', 'country')
 
 
 from .models import PlatformUser
