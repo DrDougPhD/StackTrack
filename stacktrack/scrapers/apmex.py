@@ -59,25 +59,40 @@ logger = logging.getLogger(__appname__)
 PRODUCT_URL_FMT = 'http://www.apmex.com/product/{i}/'
 SEARCH_MAX = 120000
 def main(args):
-	webpage = download_product_page(SEARCH_MAX)
+	starting_index = 116000
+	try:
+		"""
+		for i in range(SEARCH_MAX):
+			webpage = download_product_page(i)
+			if page_not_found(webpage):
+				break
 
-	"""
-	for i in range(SEARCH_MAX):
-		webpage = download_product_page(i)
-		if page_not_found(webpage):
-			break
+			archive(webpage)
+			product_info = extract_product_info(webpage)
+			save(product_info)
+			download_images(i, product_info)
+		"""
+		webpage = download_product_page(starting_index)
 
-		archive(webpage)
-		product_info = extract_product_info(webpage)
-		save(product_info)
-		download_images(i, product_info)
-	"""
+	except requests.exceptions.HTTPError as e:
+		logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
+
+	else:
+		pass
+
+	finally:
+		pass
+
 
 import requests
 from bs4 import BeautifulSoup
 def download_product_page(product_id):
 	logger.info('Download product #{}'.format(product_id))
 	r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
+
+	# If page not found, raise an exception and stop processing.
+	r.raise_for_status()
+
 	html = BeautifulSoup(r.text, 'lxml')
 	print(html.prettify())
 
