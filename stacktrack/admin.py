@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import Ingot
 @admin.register(Ingot)
 class IngotAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('name', 'precious_metal', 'mass', 'fineness', 'ingot_type')
 
 
 from .models import Manufacturer
@@ -16,19 +16,19 @@ class ManufacturerAdmin(admin.ModelAdmin):
 from .models import Fineness
 @admin.register(Fineness)
 class FinenessAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('friendly_name', 'multiplier')
 
 
 from .models import Mass
 @admin.register(Mass)
 class MassAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('friendly_name', 'unit', 'number')
 
 
 from .models import UnitOfMass
 @admin.register(UnitOfMass)
 class UnitOfMassAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('name', 'abbreviation', 'ozt_multiplier')
 
 
 from .models import IngotType
@@ -52,7 +52,7 @@ class PrimaryImageAdmin(admin.ModelAdmin):
 from .models import StackEntry
 @admin.register(StackEntry)
 class StackEntryAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('bought_for', 'purchase', 'ingot', 'sale', 'sold_for', 'owner')
 
 
 from .models import TransactionAmount
@@ -64,7 +64,7 @@ class TransactionAmountAdmin(admin.ModelAdmin):
 from .models import Currency
 @admin.register(Currency)
 class CurrencyAdmin(admin.ModelAdmin):
-	pass
+	list_display = ('symbol', 'name', 'abbreviation', 'country')
 
 
 from .models import PlatformUser

@@ -19,8 +19,18 @@ import urllib.parse
 from datetime import datetime
 import os
 from collections import defaultdict
+import logging
+logger = logging.getLogger('batch')
 
-csv_filename = 'ag_tx.csv'
+DATA_DIRECTORY = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    os.pardir,
+    'data',
+)) 
+csv_filename = os.path.join(
+    DATA_DIRECTORY,
+    'ag_tx.csv'
+)
 
 
 def main():
@@ -28,11 +38,30 @@ def main():
 		records = csv.DictReader(csv_file)
 		pprint.pprint(records.fieldnames)
 		print('-'*80)
-		process(records)
+		processed = process(records)
+	return processed
 
+from django.contrib.auth.models import User
+from .models import Ingot
+from .models import Manufacturer
+from .models import Fineness
+from .models import Mass
+from .models import UnitOfMass
+from .models import IngotType
+from .models import Image
+from .models import PrimaryImage
+from .models import StackEntry
+from .models import Platform
+from .models import PlatformUser
+from .models import SalePost
+from .models import Transaction
+from .models import TransactionAmount
+from .models import Currency
+from .models import Shipping
+from .models import ShippingCompany
+from .models import ShippingStatus
 
 def process(csvrecords):
-	"""
 	us_dollar = Currency(
 		name='US Dollar',
 		abbreviation='USD',
@@ -40,30 +69,36 @@ def process(csvrecords):
 		country='United States',
 	)
 	us_dollar.save()
-	"""
-	us_dollar = ('US Dollar', 'USD', '$', 'United States')
-	admin = 'Me' # User.objects.all()[0]
+	#us_dollar = ('US Dollar', 'USD', '$', 'United States')
+	admin = User.objects.all()[0]
 
 	records = [dict(r) for r in csvrecords]
 	process_platforms(records)
 	process_shipping(records, us_dollar)
 	process_masses(records)
 	process_ingots(records, admin)
-	process_posts(records)
-	process_stack_entries(records, admin)
+	process_posts(records, us_dollar)
+	process_stack_entries(records, admin, us_dollar)
+	return records
 
 
-def process_stack_entries(records, owner):
+def process_stack_entries(records, owner, us_dollar):
 	stack_entries = []
 	for r in records:
-		stack_entry = {
+		tx = TransactionAmount(
+			amount=float(r['Bought for']),
+			currency=us_dollar,
+		)
+		tx.save()
+		stack_entry = StackEntry(**{
 			'ingot': r['ingot'],
 			'owner': owner,
 			'purchase': r['transaction'],
-			'bought_for': float(r['Bought for']),
+			'bought_for': tx,
 			'sale': None,
 			'sold_for': None,
-		}
+		})
+		stack_entry.save()
 
 		stack_entries.append(stack_entry)
 		print('-'*10 + '|~ Stack Entry ~|' + '-'*10)
@@ -72,7 +107,7 @@ def process_stack_entries(records, owner):
 	return stack_entries
 
 
-def process_posts(records):
+def process_posts(records, us_dollar):
 	# sale posts
 	transactions = {}
 	sale_posts = {}
@@ -80,7 +115,7 @@ def process_posts(records):
 		url = r['Purchase message thread']
 		if not url:
 			unique_id = cleaned_url = r['Item']
-			url = None
+			url = 'N/A'
 
 		else:
 			domain_name, homepage = extract_website_info(url)
@@ -140,15 +175,16 @@ def process_posts(records):
 			sale_post = sale_posts[unique_id]
 
 		else:
-			sale_post = {
+			sale_post = SalePost(**{
 				'title': cleaned_url,
 				'description': url,
 				'platform': r['platform'],
 				'seller': r['seller'],
 				# ebay_post_attributes: ...,
-				'date_listed': '',
+				# 'date_listed': '',
 				'access_id': unique_id,
-			}
+			})
+			sale_post.save()
 			sale_posts[unique_id] = sale_post
 
 		r['sale_post'] = sale_post
@@ -180,26 +216,51 @@ def process_posts(records):
 			transactions[unique_id] = tx
 
 		r['transaction'] = tx
+		r['tx_id'] = unique_id
 
 	print('-'*10 + '|~ Sale posts ~|' + '-'*10)
 	pprint.pprint(sale_posts)
 	print('-'*10 + '|~ Transactions ~|' + '-'*10)
+	saved_txs = {}
+	for t in transactions:
+		tx_amount = TransactionAmount(
+			amount=transactions[t]['total_price'],
+			currency=us_dollar,
+		)
+		tx_amount.save()
+		transactions[t]['total_price'] = tx_amount
+		transaction = Transaction(**transactions[t])
+		transaction.save()
+		saved_txs[t] = transaction
+
+	for r in records:
+		r['transaction'] = saved_txs[r['tx_id']]
+
 	pprint.pprint(transactions)
 
 
 def process_ingots(records, admin):
-	three_nines_fine = {
+	three_nines_fine = Fineness(**{
 		'multiplier': 1.0,
 		'friendly_name': '.999 fine (three nines)',
-	}  #Fineness(friendly_name='.999 fine (three nines)')
-	# fineness.save()
-	ingot_types = [
-		'bar', #IngotType(name='bar'),
-		'round', #IngotType(name='round'),
-		'coin', #IngotType(name='coin'),
-		'ingot',
-	]
-	silver = 'Ag'
+	})  #Fineness(friendly_name='.999 fine (three nines)')
+	three_nines_fine.save()
+	bar = IngotType(name='bar')
+	_round = IngotType(name='round')
+	coin = IngotType(name='coin')
+	ingot = IngotType(name='ingot')
+	default = IngotType(name='not specified')
+	ingot_types = {
+		'bar': bar,
+		'round': _round,
+		'coin': coin,
+		'ingot': ingot,
+		'default': default,
+	}
+	for i in ingot_types:
+		ingot_types[i].save()
+
+	silver = Ingot.SILVER
 
 	# Process ingots
 	ingots = {}
@@ -207,12 +268,12 @@ def process_ingots(records, admin):
 		ingot_name = r['Item']
 
 		# detect ingot type from name
-		ingot_type = 'Not specified'
+		ingot_type = default
 		stop = False
 		for ingot_word in ingot_types:
 			for word in ingot_name.split():
 				if ingot_word in word.lower():
-					ingot_type = ingot_word
+					ingot_type = ingot_types[ingot_word]
 					stop = True
 					break
 
@@ -223,7 +284,7 @@ def process_ingots(records, admin):
 			ingot = ingots[ingot_name]
 
 		else:
-			ingot = {
+			ingot = Ingot(**{
 				'name': ingot_name,
 				'description': '',
 				# mintage: ,
@@ -237,7 +298,8 @@ def process_ingots(records, admin):
 				'ingot_type': ingot_type,
 				# manufacturer: ,
 				# primary_images: ,
-			}
+			})
+			ingot.save()
 			ingots[ingot_name] = ingot
 
 		r['ingot'] = ingot
@@ -248,8 +310,14 @@ def process_ingots(records, admin):
 
 def process_masses(records):
 	# Process masses
-	gram_to_ozt = {'name': 'gram', 'abbreviation': 'g', 'ozt_multiplier': 0.03215}
-	ozt_to_ozt = {'name': 'troy ounce', 'abbreviation': 'ozt', 'ozt_multiplier': 1.0}
+	gram_to_ozt = UnitOfMass(**{
+		'name': 'gram', 'abbreviation': 'g', 'ozt_multiplier': 0.03215
+	})
+	gram_to_ozt.save()
+	ozt_to_ozt = UnitOfMass(**{
+		'name': 'troy ounce', 'abbreviation': 'ozt', 'ozt_multiplier': 1.0
+	})
+	ozt_to_ozt.save()
 	units_of_mass = {
 		'gram': gram_to_ozt,
 		'troy ounce': ozt_to_ozt,
@@ -266,11 +334,11 @@ def process_masses(records):
 
 			# is this unit in grams or ozt?
 			if g:
-				weight = {
+				weight = Mass(**{
 					'number': float(g),
 					'friendly_name': '{} grams'.format(g),
 					'unit': gram_to_ozt,
-				} 
+				})
 			else:
 				troy_ounces = float(ozt)
 				if troy_ounces >= 1:
@@ -279,12 +347,13 @@ def process_masses(records):
 					fraction = int(1/troy_ounces)
 					friendly_name_number = '1/{}'.format(fraction)
 
-				weight = {	
+				weight = Mass(**{	
 					'number': float(ozt),
 					'friendly_name': '{} ozt'.format(friendly_name_number),
 					'unit': ozt_to_ozt,
-				}
+				})
 
+			weight.save()
 			registered_weights[ozt] = weight
 
 		r['mass'] = weight
@@ -323,10 +392,11 @@ def process_shipping(records, us_dollar):
 			)
 			shipping_tx.save()
 			"""
-			shipping_tx = {
+			shipping_tx = TransactionAmount(**{
 				'amount': shipping_cost,
 				'currency': us_dollar,
-			}
+			})
+			shipping_tx.save()
 			shipping_costs[shipping_cost] = shipping_tx
 
 		r['shipping_cost'] = shipping_tx
@@ -339,7 +409,7 @@ def process_shipping(records, us_dollar):
 			#print('{domain_name}:\t{homepage}'.format(**locals()))
 
 		else:
-			domain_name, homepage = ('Not specified', None)
+			domain_name, homepage = ('Not specified', 'N/A')
 
 		if domain_name in shipping_companies:
 			s = shipping_companies[domain_name]
@@ -353,10 +423,11 @@ def process_shipping(records, us_dollar):
 			)
 			s.save()
 			"""
-			s = {
+			s = ShippingCompany(**{
 				'company_name': domain_name,
 				'url': homepage,
-			}
+			})
+			s.save()
 			shipping_companies[domain_name] = s
 
 		r['shipping_company'] = s
@@ -386,11 +457,12 @@ def process_shipping(records, us_dollar):
 			)
 			t.save()
 			"""
-			t = {
+			t = Shipping(**{
 				'shipping_company': s,
 				'price': shipping_tx,
 				'tracking': tracking_num,
-			}
+			})
+			t.save()
 			tracking_numbers[tracking_num] = t
 
 		r['tracking'] = t
@@ -465,10 +537,11 @@ def process_platforms(records):
 			)
 			p.save()
 			"""
-			p = {
+			p = Platform(**{
 				'name': platform_name,
 				'homepage': homepage,
-			}
+			})
+			p.save()
 			platforms[platform_name] = p
 
 		record['platform'] = p
@@ -485,10 +558,11 @@ def process_platforms(records):
 			u.save()
 
 			"""
-			u = {
+			u = PlatformUser(**{
 				'username': username,
 				'platform': p,
-			}
+			})
+			u.save()
 			users[username] = u
 
 		record['seller'] = u

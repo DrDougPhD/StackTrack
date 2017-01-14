@@ -1,24 +1,65 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-import requests
+from django.contrib.auth.models import User
 
 from .models import Fineness
+from .models import StackEntry
 
 # Create your views here.
 def index(request):
 	# return HttpResponse('Hello from Python!')
-	# return render(request, 'index.html')
-	r = requests.get('http://httpbin.org/status/418')
-	#print(r.text)
-	return HttpResponse('<pre>' + r.text + '</pre>')
+	return render(request, 'index.html')
+	# r = requests.get('http://httpbin.org/status/418')
+	# print(r.text)
+	# return HttpResponse('<pre>' + r.text + '</pre>')
 
 
 def db(request):
+	return render(request, 'db.html', {'finenesses': ''})
 
-	three_nines = Fineness(multiplier=1.0, friendly_name='.999 fine')
-	three_nines.save()
 
-	finenesses = Fineness.objects.all()
+def dashboard(request):
+	user = User.objects.all()[0]
+	stack_entries = StackEntry.objects.filter(owner=user)\
+		.order_by('-purchase__timestamp')
 
-	return render(request, 'db.html', {'finenesses': finenesses})
+	# calculate aggregate attributes
+	purchases = 0
+	sales = 0
+	profits = 0
+	weight = 0
+	qty = 0
+	for entry in stack_entries:
+		purchase_price = entry.bought_for.amount
+		purchases += purchase_price
+		if not entry.sale:
+			weight += entry.ingot.mass.convert_to_ozt()
+			qty += 1
+
+		else:
+			# this ingot was sold
+			sale_price = entry.sold_for.amount
+			sales += sale_price
+			profits += (sale_price - purchase_price)
+
+	cost_per_ozt = float(purchases - sales)/float(weight)
+
+	return render(request, 'stack.html', {
+		'stack_entries': stack_entries,
+		'cost_per_ozt': cost_per_ozt,
+		'weight': weight,
+		'qty': qty,
+		'purchases': purchases,
+		'sales': sales,
+		'profits': profits,
+	})
+	#return render(request, 'dashboard.html')
+
+
+from .batch import main
+def batch(request):
+	processed = main()
+	import pprint
+	processd_pretty = pprint.pformat(processed)
+	return render(request, 'batch.html', { 'data': processd_pretty })
 
