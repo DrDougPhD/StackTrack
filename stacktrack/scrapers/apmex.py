@@ -60,6 +60,7 @@ PRODUCT_URL_FMT = 'http://www.apmex.com/product/{i}/'
 SEARCH_MAX = 120000
 def main(args):
 	starting_index = 116000
+
 	try:
 		"""
 		for i in range(SEARCH_MAX):
@@ -86,6 +87,16 @@ def main(args):
 
 import requests
 from bs4 import BeautifulSoup
+ASSUMPTIONS_TESTED = False
+def test_parsing_assumptions(html):
+	# Page contains a "page-container" div with "http://schema.org/Product" itemtype.
+	assert len(html.body.main.find_all(class_='page-container')) >= 1,\
+		'No expected div class for entire product info'
+
+	assert html.body.main.find_all(class_='page-container')[0]['itemtype'] == 'http://schema.org/Product',\
+		'First page-container is not of type http://schema.org/Product'
+
+
 def download_product_page(product_id):
 	logger.info('Download product #{}'.format(product_id))
 	r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
@@ -94,7 +105,13 @@ def download_product_page(product_id):
 	r.raise_for_status()
 
 	html = BeautifulSoup(r.text, 'lxml')
-	print(html.prettify())
+
+	global ASSUMPTIONS_TESTED
+	if not ASSUMPTIONS_TESTED:
+		test_parsing_assumptions(html)
+		ASSUMPTIONS_TESTED = True
+
+	return
 
 
 def setup_logger(args):
