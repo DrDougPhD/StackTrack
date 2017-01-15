@@ -56,6 +56,10 @@ def dashboard(request):
 	#return render(request, 'dashboard.html')
 
 
+def catalog(request):
+	return render(request, 'catalog.html', { 'data': 'blah' })
+
+
 from .batch import main
 def batch(request):
 	processed = main()
