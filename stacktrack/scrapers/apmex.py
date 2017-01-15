@@ -62,6 +62,7 @@ from lxml import html
 from lxml import etree
 import json
 import time
+import urllib.parse
 logger = logging.getLogger(__appname__)
 
 
@@ -71,7 +72,7 @@ SEARCH_MAX = 120000
 TITLE_XPATH = '/html/body/main/div[1]/div[1]/div/div[2]/div/h1'
 IMAGES_XPATH = '//*[@id="additional-images-carousel"]/div/div/a'
 DESCRIPTION_XPATH = '//*[@id="productdetails"]/div[1]'
-SPEC_XPATH = '/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div'
+SPEC_XPATH = '//div[@class="product-specifications"]/div'
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 ARCHIVE_FILES_DIR = os.path.join(CURRENT_DIR, 'archive')
@@ -82,39 +83,36 @@ os.makedirs(IMAGES_DIR, exist_ok=True)
 DELAY = 2
 
 def main(args):
-	starting_index = 116000
-
-	try:
-		i = starting_index
-		"""
-		for i in range(SEARCH_MAX):
-			webpage = download_product_page(i)
-			if page_not_found(webpage):
-				break
-
-			archive(webpage)
+	for i in range(1, SEARCH_MAX):
+		try:
+			webpage, local_cache = download_product_page(i)
 			product_info = extract_product_info(webpage)
-			save(product_info)
-			download_images(i, product_info)
-		"""
-		webpage, local_cache = download_product_page(i)
-		product_info = extract_product_info(webpage)
-		save(product_info, i)
-		download_images(product_info, i)
-		logger.info('{0}:\t {1}'.format(i, product_info['title']))
-		time.sleep(DELAY)
+			save(product_info, i)
+			download_images(product_info, i)
+			logger.info('{0}:\t {1}'.format(i, product_info['title']))
+			time.sleep(DELAY)
 
-	except requests.exceptions.HTTPError as e:
-		logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
+		except requests.exceptions.HTTPError as e:
+			logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
+			log_product_id_error(i)
+			break
 
-	else:
-		pass
+		else:
+			log_product_id_success(i)
 
-	finally:
-		pass
+	logger.info('Done')
 
 
-import urllib.parse
+def log_product_id_error(pid):
+	with open('errors.txt', 'a') as f:
+		f.write('{}\n'.format(pid))
+
+
+def log_product_id_success(pid):
+	with open('successes.txt', 'a') as f:
+		f.write('{}\n'.format(pid))
+
+
 def download_images(product_info, pid):
 	for img_url in product_info['images']:
 		url = urllib.parse.urlparse(img_url)
@@ -238,6 +236,10 @@ def get_spec(page):
 	spec = {}
 	for row in spec_table_elements:
 		key = row[0].text.strip()
+		if not key:
+			# sometimes there's a pdf in the spec table. just ignore it.
+			continue
+
 		val = row[1].text.strip()
 		spec[key] = val
 
@@ -269,21 +271,14 @@ def test_parsing_assumptions(page):
 		'Product description header is not named "Product Details"'
 
 	# Product specification
-	product_spec = product_container.xpath('div[2]/div[3]/div')[0]
+	product_spec = product_container.xpath('//div[@class="product-specs"]')[0]
 	assert product_spec.xpath('h2/text()')[0].strip() == 'Product  Specifications',\
 		'Product spec header is not named as expected'
 
 	product_spec_rows = product_container.xpath(SPEC_XPATH)
-	assert len(product_spec_rows) == 10,\
-		'There are not exactly 10 entries in the product spec'
+	assert len(product_spec_rows) >0,\
+		'There are no specs in the table!'
 
-	expected_product_spec_row_names = [
-		'Product ID:', 'Year:', 'Grade:', 'Grade Service:', 'Denomination:',
-		'Mint Mark:', 'Metal Content:', 'Purity:', 'Manufacturer:', 'Diameter:'
-	]
-	for (row, expected_name) in zip(product_spec_rows, expected_product_spec_row_names):
-		assert row[0].text == expected_name, 'Product spec row "{0}" did not match expected name "{1}"'.format(row[0].text, expected_name)
-		
 
 def setup_logger(args):
 	logger.setLevel(logging.DEBUG)
@@ -305,7 +300,7 @@ def setup_logger(args):
 		'%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 	))
 	ch.setFormatter(logging.Formatter(
-		'%(levelname)s - %(message)s'
+		'%(message)s'
 	))
 	# add the handlers to the logger
 	logger.addHandler(fh)
@@ -319,7 +314,7 @@ def get_arguments():
 	# during development, I set default to False so I don't have to keep
 	# calling this with -v
 	parser.add_argument('-v', '--verbose', action='store_true',
-		default=True, help='verbose output')
+		default=False, help='verbose output')
 
 	return parser.parse_args()
 
