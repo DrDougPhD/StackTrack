@@ -55,10 +55,13 @@ __license__ = "License"
 import argparse
 from datetime import datetime
 import sys
+import os
 import logging
 import requests
 from lxml import html
+from lxml import etree
 import json
+import time
 logger = logging.getLogger(__appname__)
 
 
@@ -70,11 +73,19 @@ IMAGES_XPATH = '//*[@id="additional-images-carousel"]/div/div/a'
 DESCRIPTION_XPATH = '//*[@id="productdetails"]/div[1]'
 SPEC_XPATH = '/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div'
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+ARCHIVE_FILES_DIR = os.path.join(CURRENT_DIR, 'archive')
+os.makedirs(ARCHIVE_FILES_DIR, exist_ok=True)
+IMAGES_DIR = os.path.join(CURRENT_DIR, 'images')
+os.makedirs(IMAGES_DIR, exist_ok=True)
+
+DELAY = 2
 
 def main(args):
 	starting_index = 116000
 
 	try:
+		i = starting_index
 		"""
 		for i in range(SEARCH_MAX):
 			webpage = download_product_page(i)
@@ -86,10 +97,12 @@ def main(args):
 			save(product_info)
 			download_images(i, product_info)
 		"""
-		webpage = download_product_page(starting_index)
+		webpage, local_cache = download_product_page(i)
 		product_info = extract_product_info(webpage)
-		from pprint import pprint
-		pprint(product_info)
+		save(product_info, i)
+		download_images(product_info, i)
+		logger.info('{0}:\t {1}'.format(i, product_info['title']))
+		time.sleep(DELAY)
 
 	except requests.exceptions.HTTPError as e:
 		logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
@@ -99,6 +112,136 @@ def main(args):
 
 	finally:
 		pass
+
+
+import urllib.parse
+def download_images(product_info, pid):
+	for img_url in product_info['images']:
+		url = urllib.parse.urlparse(img_url)
+		filename = os.path.basename(url.path)
+		download_to = os.path.join(IMAGES_DIR, filename)
+		if os.path.isfile(download_to):
+			continue
+
+		logger.debug('\t\t{}'.format(filename))
+
+		response = requests.get(img_url, stream=True)
+		downloaded_file = open(download_to, 'wb')
+		for chunk in response.iter_content(chunk_size=4096):
+			if chunk:
+				downloaded_file.write(chunk)
+
+
+def save(product_info, pid):
+	json_file_path = os.path.join(ARCHIVE_FILES_DIR, '{}.json'.format(pid))
+	with open(json_file_path, 'w') as f:
+		json.dump(product_info, f)
+
+	logger.debug('\tProduct info json saved to {}'.format(json_file_path))
+
+
+def download_product_page(product_id):
+	local_cache_file_path = get_archive_file_path(product_id)
+	if os.path.isfile(local_cache_file_path):
+		logger.debug('\tAlready archived at {}'.format(local_cache_file_path))
+		with gzip.open(local_cache_file_path, 'rb') as f:
+			content = f.read()
+
+		return content.decode(), local_cache_file_path
+
+	else:
+		logger.debug('\tRetrieving from website')
+		r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
+
+		# If page not found, raise an exception and stop processing.
+		r.raise_for_status()
+
+		archived_file_path = archive(r.content, product_id)
+		return r.text, archived_file_path
+
+
+import gzip
+def archive(raw_html, product_id):
+	archive_file = get_archive_file_path(product_id)
+	with gzip.open(archive_file, 'wb') as f:
+		f.write(raw_html)
+
+	logger.debug('\tArchived to {}'.format(archive_file))
+	return archive_file
+
+
+def get_archive_file_path(pid):
+	return os.path.join(ARCHIVE_FILES_DIR, '{}.html.gz'.format(pid))
+
+
+def extract_product_info(raw_html):
+	page = html.fromstring(raw_html)
+
+	global ASSUMPTIONS_TESTED
+	if not ASSUMPTIONS_TESTED:
+		test_parsing_assumptions(page)
+		ASSUMPTIONS_TESTED = True
+
+	bullion, breadcrumbs = get_bullion(page)
+	product_info = dict(
+		title = get_title(page),
+		bullion = bullion,
+		breadcrumbs = breadcrumbs,
+		images = get_image_urls(page),
+		description = get_description(page),
+		spec = get_spec(page),
+	)
+	return product_info
+
+
+def get_bullion(page):
+	breadcrumb_xpath = '/html/body/main/div[1]/div[1]/div/script'
+	breadcrumbs_json = page.xpath(breadcrumb_xpath)[0].text
+	breadcrumbs = json.loads(breadcrumbs_json)
+	breadcrumb_itemlist = breadcrumbs['itemListElement']
+	breadcrumb_bullion_item = breadcrumb_itemlist[1]
+	return breadcrumb_bullion_item['item']['name'], breadcrumbs
+
+
+def get_title(page):
+	raw_title = page.xpath(TITLE_XPATH)[0].text
+	stripped_title = raw_title.strip()
+	return stripped_title
+
+
+def get_image_urls(page):
+	# NOTE: Some pages have video, some images are named "slab", some "rev" images are actually logos.
+	image_elements = page.xpath(IMAGES_XPATH)
+
+	urls = []
+	for single_image in image_elements:
+		if single_image.get('class') == 'video':
+			continue
+
+		raw_url = single_image.get('href')
+
+		# strip parameters from URL
+		final_url = raw_url.split('?')[0]
+		urls.append(final_url)
+
+	return urls
+
+
+def get_description(page):
+	description_element = page.xpath(DESCRIPTION_XPATH)[0]
+	description_raw_html = etree.tostring(description_element).decode().strip()
+	return description_raw_html
+
+
+def get_spec(page):
+	spec_table_elements = page.xpath(SPEC_XPATH)
+	spec = {}
+	for row in spec_table_elements:
+		key = row[0].text.strip()
+		val = row[1].text.strip()
+		spec[key] = val
+
+	return spec
 
 
 ASSUMPTIONS_TESTED = False
@@ -141,85 +284,6 @@ def test_parsing_assumptions(page):
 	for (row, expected_name) in zip(product_spec_rows, expected_product_spec_row_names):
 		assert row[0].text == expected_name, 'Product spec row "{0}" did not match expected name "{1}"'.format(row[0].text, expected_name)
 		
-
-
-def download_product_page(product_id):
-	logger.info('Download product #{}'.format(product_id))
-	r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
-
-	# If page not found, raise an exception and stop processing.
-	r.raise_for_status()
-
-	return r.text
-
-
-def extract_product_info(raw_html):
-	page = html.fromstring(raw_html)
-
-	global ASSUMPTIONS_TESTED
-	if not ASSUMPTIONS_TESTED:
-		test_parsing_assumptions(page)
-		ASSUMPTIONS_TESTED = True
-
-	product_info = dict(
-		bullion = get_bullion(page),
-		title = get_title(page),
-		images = get_image_urls(page),
-		description = get_description(page),
-		spec = get_spec(page),
-	)
-	return product_info
-
-
-def get_bullion(page):
-	breadcrumb_xpath = '/html/body/main/div[1]/div[1]/div/script'
-	breadcrumbs_json = page.xpath(breadcrumb_xpath)[0].text
-	breadcrumbs = json.loads(breadcrumbs_json)
-	breadcrumb_itemlist = breadcrumbs['itemListElement']
-	breadcrumb_bullion_item = breadcrumb_itemlist[1]
-	return breadcrumb_bullion_item['item']['name']
-
-
-def get_title(page):
-	raw_title = page.xpath(TITLE_XPATH)[0].text
-	stripped_title = raw_title.strip()
-	return stripped_title
-
-
-def get_image_urls(page):
-	# NOTE: Some pages have video, some images are named "slab", some "rev" images are actually logos.
-	image_elements = page.xpath(IMAGES_XPATH)
-
-	urls = []
-	for single_image in image_elements:
-		if single_image.get('class') == 'video':
-			continue
-
-		raw_url = single_image.get('href')
-
-		# strip parameters from URL
-		final_url = raw_url.split('?')[0]
-		urls.append(final_url)
-
-	return urls
-
-
-from lxml import etree
-def get_description(page):
-	description_element = page.xpath(DESCRIPTION_XPATH)[0]
-	description_raw_html = etree.tostring(description_element).decode().strip()
-	return description_raw_html
-
-def get_spec(page):
-	spec_table_elements = page.xpath(SPEC_XPATH)
-	spec = {}
-	for row in spec_table_elements:
-		key = row[0].text.strip()
-		val = row[1].text.strip()
-		spec[key] = val
-
-	return spec
-
 
 def setup_logger(args):
 	logger.setLevel(logging.DEBUG)
