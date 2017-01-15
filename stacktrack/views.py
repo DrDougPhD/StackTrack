@@ -58,6 +58,10 @@ def dashboard(request):
 	#return render(request, 'dashboard.html')
 
 
+def add_to_stack(request, catalog_id):
+	return HttpResponse('Add new item to stack: #{}'.format(catalog_id))
+
+
 def catalog(request):
 	ingots = Ingot.objects.all().order_by('-date_posted')
 	data = {

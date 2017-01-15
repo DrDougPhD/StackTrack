@@ -54,28 +54,53 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-	<div class="container-fluid">
-		<div class="row show-grid">
-			<div class="col-md-2">Images</div>
-			<div class="col-md-4">Name</div>
-			<div class="col-md-2">Denomination</div>
-			<div class="col-md-2">Mintage</div>
-			<div class="col-md-2">Manufacturer</div>
-		</div>
 
-		{% for entry in catalog %}
-		<div class="row show-grid">
-			<div class="col-md-2"><img class="img-responsive" src="http://placehold.it/200x100" alt=""></div>
-			<div class="col-md-4">{{ entry.name }}</div>
-			<div class="col-md-2">
-				{# 1 ozt .999 fine silver round #}
-				{{ entry.mass.friendly_name }} {{ entry.fineness.friendly_name }} {{ entry.precious_metal }}{% if entry.ingot_type %} {{ entry.ingot_type }}{% endif %}</div>
-			<div class="col-md-2">Mintage</div>
-			<div class="col-md-2">Manufacturer</div>
-		</div>
-		{% endfor %}
-
+<div class="container-fluid">
+	<div class="row show-grid">
+		<div class="col-md-2">Images</div>
+		<div class="col-md-4">Name</div>
+		<div class="col-md-2">Mintage <span class="glyphicon glyphicon-sort"></span></div>
+		<div class="col-md-2">Value <span class="glyphicon glyphicon-sort"></span></div>
+		<div class="col-md-2">Buttons</div>
 	</div>
+
+	{% for entry in catalog %}
+	<div class="row show-grid">
+		<div class="col-md-2">
+	    <img class="img-responsive"
+	         src="http://placehold.it/200x100"
+	         alt="">
+	  </div>
+		<div class="col-md-4">
+	    <div>{{ entry.name }}</div>
+	    <div>{{ entry.precious_metal }}{% if entry.ingot_type %} {{ entry.ingot_type }}{% endif %}</div>
+	    <div>{{ entry.mass.friendly_name }}</div>
+	    <div>{{ entry.fineness.friendly_name }}</div>
+	  </div>
+		<div class="col-md-2">
+	    <div>{{ entry.manufacturer }}</div>
+	    <div>Mintage: {{ entry.mintage }}</div>
+	    <div>Rarity tier: Tier 2</div>
+	  </div>
+		<div class="col-md-2">
+	    <div>Trending at <span class="trending-price">$15.24</span></div>
+	      <div>Buy it now for <span class="buy-it-now-price">$32.00</span></div>
+	  </div>
+		<div class="col-md-2">
+	    <a href="{% url 'stack-add' entry.id %}"
+			   type="button"
+			   class="btn btn-success btn-block"
+			    role="button">I own this!</a>
+	    <a href="#"
+			   type="{{ entry."
+			   class="btn btn-info btn-block"
+			   role="button">Product Page</a>
+	  </div>
+	</div>
+	{% endfor %}
+
+</div>
+
 <!--
 	<div class="table-responsive">
 		<table class="table table-striped">
