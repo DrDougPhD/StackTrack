@@ -56,6 +56,8 @@ import argparse
 from datetime import datetime
 import sys
 import logging
+import requests
+from lxml import html
 logger = logging.getLogger(__appname__)
 
 
@@ -77,6 +79,9 @@ def main(args):
 			download_images(i, product_info)
 		"""
 		webpage = download_product_page(starting_index)
+		product_info = extract_product_info(webpage)
+		from pprint import pprint
+		pprint(product_info)
 
 	except requests.exceptions.HTTPError as e:
 		logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
@@ -88,9 +93,11 @@ def main(args):
 		pass
 
 
-import requests
-from lxml import html
 ASSUMPTIONS_TESTED = False
+TITLE_XPATH = '/html/body/main/div[1]/div[1]/div/div[2]/div/h1'
+IMAGES_XPATH = '//*[@id="additional-images-carousel"]/div/div/a'
+DESCRIPTION_XPATH = '//*[@id="productdetails"]/div[1]'
+SPEC_XPATH = '/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div'
 def test_parsing_assumptions(page):
 	# Page contains a "page-container" div with "http://schema.org/Product" itemtype.
 	containers = page.xpath('/html/body/main/div[1]')
@@ -102,17 +109,16 @@ def test_parsing_assumptions(page):
 		'First page-container is not of type http://schema.org/Product'
 
 	# The product title exists
-	title = product_container.xpath('div[1]/div/div[2]/div/h1')[0]
+	title = product_container.xpath(TITLE_XPATH)[0]
 	assert title.get('class') == 'product-title',\
 		'Title item does not have product-title class'
 
 	# Product images
-	image_element = product_container.xpath('//*[@id="additional-images-carousel"]/div/div')[0]
-	assert len(image_element.xpath('a')) > 0, 'There are no images in expected location'
+	images_element = product_container.xpath(IMAGES_XPATH)
+	assert len(images_element) > 0, 'There are no images in expected location'
 	
 	# Product description
-	product_description = product_container.xpath('div[1]/div/div[3]')[0]
-	assert product_description.xpath('//*[@id="productdetails-nav"]')[0].text == 'Product Details',\
+	assert page.xpath('//*[@id="productdetails-nav"]')[0].text == 'Product Details',\
 		'Product description header is not named "Product Details"'
 
 	# Product specification
@@ -120,11 +126,14 @@ def test_parsing_assumptions(page):
 	assert product_spec.xpath('h2/text()')[0].strip() == 'Product  Specifications',\
 		'Product spec header is not named as expected'
 
-	product_spec_rows = product_container.xpath('/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div')
+	product_spec_rows = product_container.xpath(SPEC_XPATH)
 	assert len(product_spec_rows) == 10,\
 		'There are not exactly 10 entries in the product spec'
 
-	expected_product_spec_row_names = ['Product ID:', 'Year:', 'Grade:', 'Grade Service:', 'Denomination:', 'Mint Mark:', 'Metal Content:', 'Purity:', 'Manufacturer:', 'Diameter:']
+	expected_product_spec_row_names = [
+		'Product ID:', 'Year:', 'Grade:', 'Grade Service:', 'Denomination:',
+		'Mint Mark:', 'Metal Content:', 'Purity:', 'Manufacturer:', 'Diameter:'
+	]
 	for (row, expected_name) in zip(product_spec_rows, expected_product_spec_row_names):
 		assert row[0].text == expected_name, 'Product spec row "{0}" did not match expected name "{1}"'.format(row[0].text, expected_name)
 		
@@ -137,14 +146,72 @@ def download_product_page(product_id):
 	# If page not found, raise an exception and stop processing.
 	r.raise_for_status()
 
-	page = html.fromstring(r.text)
+	return r.text
+
+
+def extract_product_info(raw_html):
+	page = html.fromstring(raw_html)
 
 	global ASSUMPTIONS_TESTED
 	if not ASSUMPTIONS_TESTED:
 		test_parsing_assumptions(page)
 		ASSUMPTIONS_TESTED = True
 
-	return
+	product_info = dict(
+		bullion = get_bullion(page),
+		title = get_title(page),
+		images = get_images(page),
+		description = get_description(page),
+		spec = get_spec(page),
+	)
+	return product_info
+
+
+import json
+def get_bullion(page):
+	breadcrumb_xpath = '/html/body/main/div[1]/div[1]/div/script'
+	breadcrumbs_json = page.xpath(breadcrumb_xpath)[0].text
+	breadcrumbs = json.loads(breadcrumbs_json)
+	breadcrumb_itemlist = breadcrumbs['itemListElement']
+	breadcrumb_bullion_item = breadcrumb_itemlist[1]
+	return breadcrumb_bullion_item['item']['name']
+
+
+def get_title(page):
+	raw_title = page.xpath(TITLE_XPATH)[0].text
+	stripped_title = raw_title.strip()
+	return stripped_title
+
+
+def get_images(page):
+	# NOTE: Some pages have video, some images are named "slab", some "rev" images are actually logos.
+	image_elements = page.xpath(IMAGES_XPATH)
+
+	urls = []
+	for single_image in image_elements:
+		if single_image.get('class') == 'video':
+			continue
+
+		urls.append(single_image.get('href'))
+
+	return urls
+
+
+from lxml import etree
+def get_description(page):
+	description_element = page.xpath(DESCRIPTION_XPATH)[0]
+	description_raw_html = etree.tostring(description_element).decode().strip()
+	return description_raw_html
+
+def get_spec(page):
+	spec_table_elements = page.xpath(SPEC_XPATH)
+	spec = {}
+	for row in spec_table_elements:
+		key = row[0].text.strip()
+		val = row[1].text.strip()
+		spec[key] = val
+
+	return spec
 
 
 def setup_logger(args):
