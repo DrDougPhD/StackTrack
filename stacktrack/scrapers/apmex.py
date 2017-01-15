@@ -58,11 +58,19 @@ import sys
 import logging
 import requests
 from lxml import html
+import json
 logger = logging.getLogger(__appname__)
 
 
 PRODUCT_URL_FMT = 'http://www.apmex.com/product/{i}/'
 SEARCH_MAX = 120000
+
+TITLE_XPATH = '/html/body/main/div[1]/div[1]/div/div[2]/div/h1'
+IMAGES_XPATH = '//*[@id="additional-images-carousel"]/div/div/a'
+DESCRIPTION_XPATH = '//*[@id="productdetails"]/div[1]'
+SPEC_XPATH = '/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div'
+
+
 def main(args):
 	starting_index = 116000
 
@@ -94,10 +102,6 @@ def main(args):
 
 
 ASSUMPTIONS_TESTED = False
-TITLE_XPATH = '/html/body/main/div[1]/div[1]/div/div[2]/div/h1'
-IMAGES_XPATH = '//*[@id="additional-images-carousel"]/div/div/a'
-DESCRIPTION_XPATH = '//*[@id="productdetails"]/div[1]'
-SPEC_XPATH = '/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div'
 def test_parsing_assumptions(page):
 	# Page contains a "page-container" div with "http://schema.org/Product" itemtype.
 	containers = page.xpath('/html/body/main/div[1]')
@@ -160,14 +164,13 @@ def extract_product_info(raw_html):
 	product_info = dict(
 		bullion = get_bullion(page),
 		title = get_title(page),
-		images = get_images(page),
+		images = get_image_urls(page),
 		description = get_description(page),
 		spec = get_spec(page),
 	)
 	return product_info
 
 
-import json
 def get_bullion(page):
 	breadcrumb_xpath = '/html/body/main/div[1]/div[1]/div/script'
 	breadcrumbs_json = page.xpath(breadcrumb_xpath)[0].text
@@ -183,7 +186,7 @@ def get_title(page):
 	return stripped_title
 
 
-def get_images(page):
+def get_image_urls(page):
 	# NOTE: Some pages have video, some images are named "slab", some "rev" images are actually logos.
 	image_elements = page.xpath(IMAGES_XPATH)
 
@@ -192,7 +195,11 @@ def get_images(page):
 		if single_image.get('class') == 'video':
 			continue
 
-		urls.append(single_image.get('href'))
+		raw_url = single_image.get('href')
+
+		# strip parameters from URL
+		final_url = raw_url.split('?')[0]
+		urls.append(final_url)
 
 	return urls
 
