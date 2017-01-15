@@ -27,10 +27,13 @@ STEPS
 NOTES
 
 	Image filename formats: 
+		http://www.images-apmex.com/images/Catalog Images/Products/{i}_Slab.jpg?v=20160819024312&width=900&height=900
 		http://www.images-apmex.com/images/Catalog%20Images/Products/{i}_Obv.jpg?v=20130602094622&width=75&height=75
 		http://www.images-apmex.com/images/Catalog%20Images/Products/{i}_Rev.jpg?v=20130602094622&width=75&height=75
+		sometimes the obv/Obv is capitalized
 	Product page url format:
 		http://www.apmex.com/product/{i}/
+	Bullion type of item is not listed in spec, but can be deduced from breadcrumb.
 
 AUTHOR
 
@@ -98,6 +101,33 @@ def test_parsing_assumptions(page):
 	assert product_container.get('itemtype') == 'http://schema.org/Product',\
 		'First page-container is not of type http://schema.org/Product'
 
+	# The product title exists
+	title = product_container.xpath('div[1]/div/div[2]/div/h1')[0]
+	assert title.get('class') == 'product-title',\
+		'Title item does not have product-title class'
+
+	# Product images
+	image_element = product_container.xpath('//*[@id="additional-images-carousel"]/div/div')[0]
+	assert len(image_element.xpath('a')) > 0, 'There are no images in expected location'
+	
+	# Product description
+	product_description = product_container.xpath('div[1]/div/div[3]')[0]
+	assert product_description.xpath('//*[@id="productdetails-nav"]')[0].text == 'Product Details',\
+		'Product description header is not named "Product Details"'
+
+	# Product specification
+	product_spec = product_container.xpath('div[2]/div[3]/div')[0]
+	assert product_spec.xpath('h2/text()')[0].strip() == 'Product  Specifications',\
+		'Product spec header is not named as expected'
+
+	product_spec_rows = product_container.xpath('/html/body/main/div[1]/div[2]/div[3]/div/div[1]/div')
+	assert len(product_spec_rows) == 10,\
+		'There are not exactly 10 entries in the product spec'
+
+	expected_product_spec_row_names = ['Product ID:', 'Year:', 'Grade:', 'Grade Service:', 'Denomination:', 'Mint Mark:', 'Metal Content:', 'Purity:', 'Manufacturer:', 'Diameter:']
+	for (row, expected_name) in zip(product_spec_rows, expected_product_spec_row_names):
+		assert row[0].text == expected_name, 'Product spec row "{0}" did not match expected name "{1}"'.format(row[0].text, expected_name)
+		
 
 
 def download_product_page(product_id):
