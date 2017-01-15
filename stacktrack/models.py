@@ -5,6 +5,7 @@ from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import User
 
 
+# TODO: Rename to 'catalog'
 class Ingot(models.Model):
 	name = models.CharField(max_length=80)
 	description = models.TextField(default='')
@@ -13,9 +14,6 @@ class Ingot(models.Model):
 	silverartcollector_item_number = models.CharField(
 		max_length=20,
 		null=True
-	)
-	date_posted = models.DateTimeField(
-		default=timezone.now,
 	)
 
 	SILVER =	'Ag'
@@ -37,18 +35,21 @@ class Ingot(models.Model):
 		choices=PRECIOUS_METALS,
 		default=SILVER,
 	)
-
-	# Foreign fields
-	posted_by = models.ForeignKey(User,
-		editable=False,
-		null=True,
-		on_delete=models.SET_NULL,
-	)
 	fineness = models.ForeignKey('Fineness')
 	mass = models.ForeignKey('Mass')
 	ingot_type = models.ForeignKey('IngotType')
 	manufacturer = models.ForeignKey('Manufacturer', null=True)
 	primary_images = models.ForeignKey('PrimaryImage', null=True)
+
+	# Keep track of who posted what, at what time
+	date_posted = models.DateTimeField(
+		default=timezone.now,
+	)
+	posted_by = models.ForeignKey(User,
+		editable=False,
+		null=True,
+		on_delete=models.SET_NULL,
+	)
 
 	# Proposed fields
 	#images
@@ -71,6 +72,7 @@ class Manufacturer(models.Model):
 		return self.company_name
 
 
+# TODO: rename to purity
 class Fineness(models.Model):
 	multiplier = models.FloatField(default=1.0)
 	friendly_name = models.CharField(max_length=80)
@@ -130,6 +132,7 @@ class IngotType(models.Model):
 		return self.name
 
 
+# TODO: Add field for source platform (so I can keep track of copyrighted ebay / apmex images)
 import urllib.parse
 class Image(models.Model):
 	OBVERSE = True
@@ -189,6 +192,7 @@ class PrimaryImage(models.Model):
 		)
 
 
+# TODO: Rename to stack, add 'serial' field
 class StackEntry(models.Model):
 	ingot = models.ForeignKey('Ingot',
 		null=True,

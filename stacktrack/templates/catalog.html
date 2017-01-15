@@ -54,17 +54,38 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
-	<h3 class="sub-header">Stack</h3>
+	<div class="container-fluid">
+		<div class="row show-grid">
+			<div class="col-md-2">Images</div>
+			<div class="col-md-4">Name</div>
+			<div class="col-md-2">Denomination</div>
+			<div class="col-md-2">Mintage</div>
+			<div class="col-md-2">Manufacturer</div>
+		</div>
+
+		{% for entry in catalog %}
+		<div class="row show-grid">
+			<div class="col-md-2"><img class="img-responsive" src="http://placehold.it/200x100" alt=""></div>
+			<div class="col-md-4">{{ entry.name }}</div>
+			<div class="col-md-2">
+				{# 1 ozt .999 fine silver round #}
+				{{ entry.mass.friendly_name }} {{ entry.fineness.friendly_name }} {{ entry.precious_metal }}{% if entry.ingot_type %} {{ entry.ingot_type }}{% endif %}</div>
+			<div class="col-md-2">Mintage</div>
+			<div class="col-md-2">Manufacturer</div>
+		</div>
+		{% endfor %}
+
+	</div>
+<!--
 	<div class="table-responsive">
 		<table class="table table-striped">
 			<thead>
 				<tr>
-					<th>Purchase Date</th>
-					<th>Ingot</th>
-					<th>Price</th>
+					<th>Images</th>
+					<th>Name</th>
 					<th>Weight</th>
-					<th>Sale</th>
-					<th>More Info</th>
+					<th>Mintage</th>
+					<th>Manufacturer</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -74,11 +95,6 @@
 					<td>Blah</td>
 					<td>Blah</td>
 					<td>Blah</td>
-					<td>
-						<a href="#">
-							<span class="glyphicon glyphicon-th-list"></span>
-						</a>
-					</td>
 				</tr>
 {% comment "Optional note" %}
 			{% for entry in stack_entries %}
@@ -105,5 +121,6 @@
 			</tbody>
 		</table>
 	</div>
+-->
 </div>
 {% endblock %}

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 
 from .models import Fineness
 from .models import StackEntry
+from .models import Ingot
 
 # Create your views here.
 def index(request):
@@ -45,6 +46,7 @@ def dashboard(request):
 	cost_per_ozt = float(purchases - sales)/float(weight)
 
 	return render(request, 'stack.html', {
+		'page_title': 'Dashboard',
 		'stack_entries': stack_entries,
 		'cost_per_ozt': cost_per_ozt,
 		'weight': weight,
@@ -57,7 +59,12 @@ def dashboard(request):
 
 
 def catalog(request):
-	return render(request, 'catalog.html', { 'data': 'blah' })
+	ingots = Ingot.objects.all().order_by('-date_posted')
+	data = {
+		'page_title': 'Catalog',
+		'catalog': ingots,
+	}
+	return render(request, 'catalog.html', data)
 
 
 from .batch import main
