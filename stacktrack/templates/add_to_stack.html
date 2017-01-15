@@ -1,49 +1,70 @@
 <form>
+<div class="container-fluid">
+  <div class="row show-grid">
+    <!-- Obverse image -->
+    <div class="col-md-4">
+      <img class="img-responsive"
+	         src="http://placehold.it/150x150"
+	         alt="">
+    </div>
+    <div class="col-md-8">
+      <div class="row show-grid">
+        <!-- Sale post url -->
+        <div class="col-md-12">
+					<div class="form-group">
+							<label class="control-label" for="sale-post">Sale Posting</label>
+							<input type="text" class="form-control" id="sale-post" placeholder="http://ebay.com/itm/...">
+					</div>
+        </div>
+      </div>
+      <div class="row show-grid">
+        <!-- Purchase price -->
+        <div class="col-md-6">
+					<div class="form-group">
+						<label class="control-label" for="purchase">Purchase price</label>
+						<input type="text" class="form-control" id="purchase" placeholder="Purchase price">
+					</div>
+        </div>
+        <!-- Shipping price -->
+        <div class="col-md-6">
+					<div class="form-group">
+						<label class="control-label" for="shipping-and-handling">Shipping &amp; Handling</label>
+						<input type="text" class="form-control" id="shipping-and-handling" placeholder="Shipping &amp; Handling">
+					</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- Sale post -->
-<div class="row show-grid">
-	<div class="col-md-12"><div class="form-group">
-		<label class="control-label" for="sale-post">Sale Posting</label>
-		<input type="text" class="form-control" id="sale-post" placeholder="http://ebay.com/itm/...">
-	</div></div>
+  <div class="row show-grid">
+		<!-- Reverse image -->
+    <div class="col-md-4">
+      <img class="img-responsive"
+	         src="http://placehold.it/150x150"
+	         alt="">
+    </div>
+    <div class="col-md-8">
+      <div class="row show-grid">
+        <!-- Shipping tracking number -->
+        <div class="col-md-12">
+					<div class="form-group">
+						<label class="control-label" for="shipment-tracking">Tracking</label>
+						<input type="text" class="form-control" id="shipment-tracking" placeholder="blah">
+					</div>
+        </div>
+      </div>
+      <div class="row show-grid">
+				<!-- Purchase date -->
+				<div class="col-md-9"><div class="form-group">
+					<label class="control-label" for="purchase-timestamp">Date</label>
+					<input type="datetime-local" class="form-control" id="purchase-timestamp">
+				</div></div>
+				<!-- Submit button -->
+				<div class="col-md-3">
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
+      </div>
+    </div>
+  </div>
 </div>
-
-<!-- Purchase price + Shipping and Handling -->
-<div class="row show-grid">
-	<!-- Purchase price -->
-	<div class="col-md-6"><div class="form-group">
-		<label class="control-label" for="purchase">Purchase price</label>
-		<input type="text" class="form-control" id="purchase" placeholder="Purchase price">
-	</div></div>
-
-	<!-- Shipping and Handling -->
-	<div class="col-md-6"><div class="form-group">
-		<label class="control-label" for="shipping-and-handling">Shipping &amp; Handling</label>
-		<input type="text" class="form-control" id="shipping-and-handling" placeholder="Shipping &amp; Handling">
-	</div></div>
-</div>
-
-<!-- Tracking number -->
-<div class="row show-grid">
-	<div class="col-md-12"><div class="form-group">
-		<label class="control-label" for="shipment-tracking">Tracking</label>
-		<input type="text" class="form-control" id="shipment-tracking" placeholder="blah">
-	</div></div>
-</div>
-
-<!-- Purchase date and Submit button -->
-<div class="row show-grid">
-	<!-- Purchase date -->
-	<div class="col-md-9"><div class="form-group">
-
-		<label class="control-label" for="purchase-timestamp">Date</label>
-		<input type="datetime-local" class="form-control" id="purchase-timestamp">
-
-	</div></div>
-	<!-- Submit button -->
-	<div class="col-md-3">
-		<button type="submit" class="btn btn-primary">Submit</button>
-	</div>
-</div>
-
 </form>
