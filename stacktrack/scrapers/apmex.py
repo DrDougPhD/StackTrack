@@ -89,16 +89,25 @@ def main(args):
 			product_info = extract_product_info(webpage)
 			save(product_info, i)
 			download_images(product_info, i)
-			logger.info('{0}:\t {1}'.format(i, product_info['title']))
-			time.sleep(DELAY)
 
 		except requests.exceptions.HTTPError as e:
 			logger.exception('End of the line at product #{}'.format(SEARCH_MAX))
 			log_product_id_error(i)
 			break
 
+		except KeyboardInterrupt as e: # Ctrl-C
+			raise e
+
+		except:
+			logger.exception('Something went wrong that I didnt expect')
+			log_product_id_error(i)
+
 		else:
 			log_product_id_success(i)
+
+		finally:
+			time.sleep(DELAY)
+			print('-'*80)
 
 	logger.info('Done')
 
@@ -121,7 +130,7 @@ def download_images(product_info, pid):
 		if os.path.isfile(download_to):
 			continue
 
-		logger.debug('\t\t{}'.format(filename))
+		logger.info('\t\t{}'.format(filename))
 
 		response = requests.get(img_url, stream=True)
 		downloaded_file = open(download_to, 'wb')
@@ -141,21 +150,25 @@ def save(product_info, pid):
 def download_product_page(product_id):
 	local_cache_file_path = get_archive_file_path(product_id)
 	if os.path.isfile(local_cache_file_path):
-		logger.debug('\tAlready archived at {}'.format(local_cache_file_path))
 		with gzip.open(local_cache_file_path, 'rb') as f:
 			content = f.read()
 
-		return content.decode(), local_cache_file_path
+		raw_html = content.decode()
+		archived_file_path = local_cache_file_path
+		accessed_from = 'local cache'
 
 	else:
-		logger.debug('\tRetrieving from website')
 		r = requests.get(PRODUCT_URL_FMT.format(i=product_id))
 
 		# If page not found, raise an exception and stop processing.
 		r.raise_for_status()
 
 		archived_file_path = archive(r.content, product_id)
-		return r.text, archived_file_path
+		raw_html = r.text
+		accessed_from = 'website'
+
+	logger.info('{0} ({1})'.format(product_id, accessed_from))
+	return raw_html, archived_file_path
 
 
 import gzip
@@ -174,11 +187,7 @@ def get_archive_file_path(pid):
 
 def extract_product_info(raw_html):
 	page = html.fromstring(raw_html)
-
-	global ASSUMPTIONS_TESTED
-	if not ASSUMPTIONS_TESTED:
-		test_parsing_assumptions(page)
-		ASSUMPTIONS_TESTED = True
+	test_parsing_assumptions(page)
 
 	bullion, breadcrumbs = get_bullion(page)
 	product_info = dict(
