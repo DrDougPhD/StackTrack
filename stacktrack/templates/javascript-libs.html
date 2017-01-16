@@ -1,6 +1,4 @@
-<!-- Bootstrap core JavaScript
-================================================== -->
-<!-- Placed at the end of the document so the pages load faster -->
+{% comment Bootstrap core JavaScript. Placed at the end of the document so the pages load faster %}
 <script type="text/javascript"
         src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script type="text/javascript"
@@ -17,20 +15,20 @@
 <script type="text/javascript">
 	$(function () {
 		$('#datetimepicker').datetimepicker({
-		  defaultDate: moment(),
+			defaultDate: moment(),
 		});
 
 		$("#input-images").fileinput({
-				uploadUrl: "/site/image-upload",
-				allowedFileExtensions: ["jpg", "png", "gif"],
-				resizeImage: false,
-				showUpload: false,
-				showCancel: false,
+			uploadUrl: "/site/image-upload",
+			allowedFileExtensions: ["jpg", "png", "gif"],
+			resizeImage: false,
+			showUpload: false,
+			showCancel: false,
 		}).on('filepreupload', function() {
-				$('#kv-success-box').html('');
+			$('#kv-success-box').html('');
 		}).on('fileuploaded', function(event, data) {
-				$('#kv-success-box').append(data.response.link);
-				$('#kv-success-modal').modal('show');
+			$('#kv-success-box').append(data.response.link);
+			$('#kv-success-modal').modal('show');
 		});
 	});
 </script>

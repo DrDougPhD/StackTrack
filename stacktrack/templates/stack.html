@@ -6,229 +6,148 @@
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
 <nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <a class="navbar-brand" href="#">Dashboard</a>
-    </div>
+	<div class="container-fluid">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<a class="navbar-brand"
+			   href="#">Dashboard</a>
+		</div>
 
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Silver <span class="sr-only">(current)</span></a></li>
-        <li><a href="#">Gold</a></li>
-        <li><a href="#">Platinum</a></li>
-        <li><a href="#">Palladium</a></li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Action</a></li>
-            <li><a href="#">Another action</a></li>
-            <li><a href="#">Something else here</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Separated link</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">One more separated link</a></li>
-          </ul>
-        </li>
-      </ul>
-      <form class="navbar-form navbar-left">
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="Search">
-        </div>
-        <button type="submit" class="btn btn-default">Submit</button>
-      </form>
-      <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">Link</a></li>
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Action</a></li>
-            <li><a href="#">Another action</a></li>
-            <li><a href="#">Something else here</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="#">Separated link</a></li>
-          </ul>
-        </li>
-      </ul>
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse"
+		     id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active">
+					<a href="#">Silver <span class="sr-only">(current)</span></a>
+				</li>
+				<li><a href="#">Gold</a></li>
+				<li><a href="#">Platinum</a></li>
+				<li><a href="#">Palladium</a></li>
+				<li class="dropdown">
+					<a href="#"
+					   class="dropdown-toggle"
+					   data-toggle="dropdown"
+					   role="button"
+					   aria-haspopup="true"
+					   aria-expanded="false">Dropdown <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Action</a></li>
+						<li><a href="#">Another action</a></li>
+						<li><a href="#">Something else here</a></li>
+						<li role="separator"
+						    class="divider"></li>
+						<li><a href="#">Separated link</a></li>
+						<li role="separator"
+						    class="divider"></li>
+						<li><a href="#">One more separated link</a></li>
+					</ul>
+				</li>
+			</ul>
+			<form class="navbar-form navbar-left">
+				<div class="form-group">
+					<input type="text"
+					       class="form-control"
+					       placeholder="Search">
+				</div>
+				<button type="submit"
+				        class="btn btn-default">Submit</button>
+			</form>
+			<ul class="nav navbar-nav navbar-right">
+				<li><a href="#">Link</a></li>
+				<li class="dropdown">
+					<a href="#"
+					   class="dropdown-toggle"
+					   data-toggle="dropdown"
+					   role="button"
+					   aria-haspopup="true"
+					   aria-expanded="false">Dropdown <span class="caret"></span></a>
+					<ul class="dropdown-menu">
+						<li><a href="#">Action</a></li>
+						<li><a href="#">Another action</a></li>
+						<li><a href="#">Something else here</a></li>
+						<li role="separator"
+						    class="divider"></li>
+						<li><a href="#">Separated link</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</div><!-- /.container-fluid -->
 </nav>
 
-<!--
-	<h1 class="page-header">Dashboard</h1>
-
-	<ul class="nav nav-tabs nav-justified">
-		<li role="presentation" class="active"><a href="#">Silver</a></li>
-		<li role="presentation"><a href="#">Gold</a></li>
-		<li role="presentation"><a href="#">Platinum</a></li>
-		<li role="presentation"><a href="#">Palladium</a></li>
-	</ul>
--->
-
-	<!-- Stack summary: dollar cost average, qty, weight, purchases, profits -->
-<!--	<div class="text-center">
-	<table class="table">
-		<tr class="success">
-			<th>Dollar-Cost Average</th>
-			<th>Weight</th>
-			<th>Quantity</th>
-			<th>Purchases</th>
-			<th>Sales</th>
-			<th>Profits</th>
-		</tr>
-		<tr class="success">
-			<td>${{ cost_per_ozt | floatformat:2 }} / ozt</td>
-			<td>{{ weight | floatformat }} ozt</td>
-			<td>{{ qty }} ingots</td>
-			<td>${{ purchases | floatformat:2 }}</td>
-			<td>${{ sales | floatformat:2 }}</td>
-			<td>${{ profits | floatformat:2 }}</td>
-		</tr>
-	</table>
-	</div>-->
-
-	{% comment "Grids for aggregate values" %}
-		http://dsmorse.github.io/gridster.js/
-	{% endcomment %}
-	<div class="container-fluid">
-		<div class="row text-center">
-					<div class="col-md-2 debug">
-						<div>Dollar-Cost Average</div>
-						<hr class="thin">
-						<div>${{ cost_per_ozt | floatformat:2 }} / ozt</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Weight</div>
-						<hr class="thin">
-						<div>{{ weight | floatformat }} ozt</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Quantity</div>
-						<hr class="thin">
-						<div>{{ qty }} ingots</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Purchases</div>
-						<hr class="thin">
-						<div>${{ purchases | floatformat:2 }}</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Sales</div>
-						<hr class="thin">
-						<div>${{ sales | floatformat:2 }}</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Profits</div>
-						<hr class="thin">
-						<div>${{ profits | floatformat:2 }}</div>
-					</div>
+{% comment "Grids for aggregate values" %}
+	http://dsmorse.github.io/gridster.js/
+{% endcomment %}
+<div class="container-fluid">
+	<div class="row text-center">
+		<div class="col-md-2 debug">
+			<div>Dollar-Cost Average</div>
+			<hr class="thin">
+			<div>${{ cost_per_ozt | floatformat:2 }} / ozt</div>
+		</div>
+		<div class="col-md-2 debug">
+			<div>Weight</div>
+			<hr class="thin">
+			<div>{{ weight | floatformat }} ozt</div>
+		</div>
+		<div class="col-md-2 debug">
+			<div>Quantity</div>
+			<hr class="thin">
+			<div>{{ qty }} ingots</div>
+		</div>
+		<div class="col-md-2 debug">
+			<div>Purchases</div>
+			<hr class="thin">
+			<div>${{ purchases | floatformat:2 }}</div>
+		</div>
+		<div class="col-md-2 debug">
+			<div>Sales</div>
+			<hr class="thin">
+			<div>${{ sales | floatformat:2 }}</div>
+		</div>
+		<div class="col-md-2 debug">
+			<div>Profits</div>
+			<hr class="thin">
+			<div>${{ profits | floatformat:2 }}</div>
 		</div>
 	</div>
+</div>
 
-
-<!--	<div class="container-fluid">
-		<div class="row text-center">
-			<div class="col-md-3 debug">
-				<div class="row">
-					<div class="col-md-12 debug">
-						<div>Dollar-Cost Average</div>
-						<hr class="thin">
-						<div>${{ cost_per_ozt | floatformat:2 }} / ozt</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-md-9 debug">
-				<div class="row">
-					<div class="col-md-2 debug">
-						<div>Weight</div>
-						<hr class="thin">
-						<div>{{ weight | floatformat }} ozt</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Quantity</div>
-						<hr class="thin">
-						<div>{{ qty }} ingots</div>
-					</div>
-					<div class="col-md-3 debug">
-						<div>Purchases</div>
-						<hr class="thin">
-						<div>${{ purchases | floatformat:2 }}</div>
-					</div>
-					<div class="col-md-2 debug">
-						<div>Sales</div>
-						<hr class="thin">
-						<div>${{ sales | floatformat:2 }}</div>
-					</div>
-					<div class="col-md-3 debug">
-						<div>Profits</div>
-						<hr class="thin">
-						<div>${{ profits | floatformat:2 }}</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>-->
-
-<!-- Removing the image placeholders 
-	<div class="row placeholders">
-		<div class="col-xs-6 col-sm-3 placeholder">
-			<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-			<h4>Label</h4>
-			<span class="text-muted">Something else</span>
-		</div>
-		<div class="col-xs-6 col-sm-3 placeholder">
-			<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-			<h4>Label</h4>
-			<span class="text-muted">Something else</span>
-		</div>
-		<div class="col-xs-6 col-sm-3 placeholder">
-			<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-			<h4>Label</h4>
-			<span class="text-muted">Something else</span>
-		</div>
-		<div class="col-xs-6 col-sm-3 placeholder">
-			<img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-			<h4>Label</h4>
-			<span class="text-muted">Something else</span>
-		</div>
-	</div>-->
-
-	<div class="table-responsive">
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Purchase Date</th>
-					<th>Ingot</th>
-					<th>Price</th>
-					<th>Weight</th>
-					<th>Sale</th>
-					<th>More Info</th>
-				</tr>
-			</thead>
-			<tbody>
-			{% for entry in stack_entries %}
-				<tr>
-					<td>{{ entry.purchase.timestamp|date:"Y-m-d" }}</td>
-					<td>{{ entry.ingot.name }}</td>
-					<td>{{ entry.bought_for }}</td>
-					<td>{{ entry.ingot.mass.friendly_name }}</td>
-					<td>
+<div class="table-responsive">
+	<table class="table table-striped">
+		<thead>
+			<tr>
+				<th>Purchase Date</th>
+				<th>Ingot</th>
+				<th>Price</th>
+				<th>Weight</th>
+				<th>Sale</th>
+				<th>More Info</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for entry in stack_entries %}
+			<tr>
+				<td>{{ entry.purchase.timestamp|date:"Y-m-d" }}</td>
+				<td>{{ entry.ingot.name }}</td>
+				<td>{{ entry.bought_for }}</td>
+				<td>{{ entry.ingot.mass.friendly_name }}</td>
+				<td>
 					{% if entry.sold_for %}
 						{{ entry.sold_for }}
 					{% else %}
 						-
 					{% endif %}
-					</td>
-					<td>
-						<a href="#">
-							<span class="glyphicon glyphicon-th-list"></span>
-						</a>
-					</td>
-				</tr>
-			{% endfor %}
-			</tbody>
-		</table>
-	</div>
+				</td>
+				<td>
+					<a href="#">
+						<span class="glyphicon glyphicon-th-list"></span>
+					</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</div>
 </div>
 {% endblock %}

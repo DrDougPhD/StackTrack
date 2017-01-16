@@ -5,45 +5,43 @@
 
 <form action="/stack/add/{{ ingot.id }}/" method="post">
 	{% csrf_token %}
-  <div class="row show-grid">
+	<div class="row show-grid">
 		<div class="row show-grid">
 			<h2 class="page-header">{{ ingot.name }}</h2>
 		</div>
-
-    <div class="col-md-4">
+		<div class="col-md-4">
 			<div class="row show-grid">
 				<h2 class="page-header">{{ ingot.name }}</h2>
 			</div>
 
-	    <!-- Obverse / Reverse image -->
+			<!-- Obverse / Reverse image -->
 			<div class="row">
-		    <img class="img-responsive"
-			       src="http://placehold.it/150x150"
-			       alt="">
-		    <img class="img-responsive"
-			       src="http://placehold.it/150x150"
-			       alt="">
+				<img class="img-responsive"
+				     src="http://placehold.it/150x150"
+				     alt="">
+				<img class="img-responsive"
+				     src="http://placehold.it/150x150"
+				     alt="">
 			</div>
 			<hr>
-	    <!-- Upload images -->
+			<!-- Upload images -->
 			<div class="row">
-		      <div class="form-group">
-						<input id="input-images"
-						       name="{{ form.uploading_imgs.html_name }}"
-						       type="file"
-						       class="file-loading"
-						       accept="image/*"
-						       multiple>
-						{{ form.uploading_imgs.errors }}
-		      </div>
+				<div class="form-group">
+					<input id="input-images"
+					       name="{{ form.uploading_imgs.html_name }}"
+					       type="file"
+					       class="file-loading"
+					       accept="image/*"
+					       multiple></input>
+					{{ form.uploading_imgs.errors }}
+				</div>
 			</div>
-    </div>
-    <div class="col-md-8">
+		</div>
+		<div class="col-md-8">
 			{{ form.non_field_errors }}
-      <div class="row show-grid">
-
+			<div class="row show-grid">
 				{# Sale post url #}
-        <div class="col-md-12">
+				<div class="col-md-12">
 					<div class="form-group">
 						{{ form.sale_post.errors }}
 						<label class="control-label"
@@ -63,12 +61,12 @@
 						<span id="{{ form.sale_post.id_for_label }}-help"
 						      class="help-block">{{ form.sale_post.help_text }}</span>
 					</div>
-        </div>
-      </div>
-      <div class="row show-grid">
+				</div>
+			</div>
+			<div class="row show-grid">
 
-        {# Purchase price #}
-        <div class="col-md-6">
+				{# Purchase price #}
+				<div class="col-md-6">
 					<div class="form-group">
 						{{ form.purchase_price.errors }}
 						<label class="control-label"
@@ -89,10 +87,10 @@
 						<span id="{{ form.purchase_price.id_for_label }}-help"
 						      class="help-block">{{ form.purchase_price.help_text }}</span>
 					</div>
-        </div>
+				</div>
 
 				{# Shipping price #}
-        <div class="col-md-6">
+				<div class="col-md-6">
 					<div class="form-group">
 						{{ form.shipping_price.errors }}
 						<label class="control-label"
@@ -114,12 +112,12 @@
 						      class="help-block">{{ form.shipping_price.help_text }}</span>
 
 					</div>
-        </div>
-      </div>
+				</div>
+			</div>
 			<div class="row show-grid">
 
 				{# Shipment tracking #}
-        <div class="col-md-12">
+				<div class="col-md-12">
 					<div class="form-group">
 						{{ form.tracking_num.errors }}
 						<label class="control-label"
@@ -139,12 +137,12 @@
 						<span id="{{ form.tracking_num.id_for_label }}-help"
 						      class="help-block">{{ form.tracking_num.help_text}}</span>
 					</div>
-        </div>
-      </div>
-      <div class="row show-grid">
+				</div>
+			</div>
+			<div class="row show-grid">
 
 				{# Purchase date #}
-        <div class="col-md-9">
+				<div class="col-md-9">
 					<div class="form-group">
 						{{ form.purchase_date.errors }}
 						<label class="control-label"
@@ -172,16 +170,16 @@
 						<span id="{{ form.purchase_date.id_for_label }}-help"
 						      class="help-block">{{ form.purchase_date.help_text }}</span>
 					</div>
-        </div>
+				</div>
 
 				{# Submit button #}
-        <div class="col-md-3">
+				<div class="col-md-3">
 					<button type="submit"
 					        class="btn btn-primary btn-block">Submit</button>
-        </div>
-      </div>
-    </div>
-  </div>
+				</div>
+			</div>
+		</div>
+	</div>
 </form>
 
 {% endblock %}
