@@ -15,10 +15,6 @@ def index(request):
 	# return HttpResponse('<pre>' + r.text + '</pre>')
 
 
-def db(request):
-	return render(request, 'db.html', {'finenesses': ''})
-
-
 def dashboard(request):
 	user = User.objects.all()[0]
 	stack_entries = StackEntry.objects.filter(owner=user)\
@@ -61,7 +57,25 @@ def dashboard(request):
 from .forms import StackAdditionForm
 def stack_addition(request, catalog_id):
 	ingot = Ingot.objects.get(id=catalog_id)
-	form = StackAdditionForm()
+
+	if request.method == 'POST':
+		form = StackAdditionForm(request.POST)
+		print(request.POST)
+		if form.is_valid():
+			import pprint
+			print('='*80)
+			print(pprint.pformat(form.cleaned_data))
+			print('Sale post: ' + form.cleaned_data['sale_post'])
+			print('Purchase price: $' + form.cleaned_data['purchase_price'])
+			print('Shipping price: $' + form.cleaned_data['shipping_price'])
+			print('Tracking: ' + form.cleaned_data['tracking_num'])
+			print('Purchase date: ' + str(form.cleaned_data['purchase_date']))
+
+			return HttpResponse('Success!')
+
+	else: # GET
+		form = StackAdditionForm()
+
 	return render(request, 'stack_addition.html', {
 		'page_title': 'Stack Addition | {ingot_name}'.format(ingot_name=ingot.name),
 		'ingot': ingot,

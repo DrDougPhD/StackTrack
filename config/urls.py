@@ -10,12 +10,18 @@ import stacktrack.views
 # url(r'^$', 'config.views.home', name='home'),
 # url(r'^blog/', include('blog.urls')),
 
+# stack/dashboard/
+# stack/silver/
+# stack/gold/
+# stack/platinum/
+# stack/palladium/
+# stack/archive/
+# stack/add/
 urlpatterns = [
 	url(r'^$', stacktrack.views.index, name='index'),
 	url(r'^dashboard', stacktrack.views.dashboard, name='dashboard'),
 	url(r'^catalog', stacktrack.views.catalog, name='catalog'),
 	url(r'^batch', stacktrack.views.batch, name='batch'),
-	url(r'^db', stacktrack.views.db, name='db'),
-	url(r'^stack/add/([0-9]+)/$', stacktrack.views.add_to_stack, name='stack-add'),
+	url(r'^stack/add/([0-9]+)/$', stacktrack.views.stack_addition, name='stack-add'),
 	url(r'^admin/', include(admin.site.urls)),
 ]
