@@ -4,6 +4,7 @@
 {% block content %}
 
 <form action="/purchase/" method="post">
+	{% csrf_token %}
   <div class="row show-grid">
 		<div class="row show-grid">
 			<h2 class="page-header">{{ data }}</h2>
@@ -27,7 +28,12 @@
 	    <!-- Upload images -->
 			<div class="row">
 		      <div class="form-group">
-						<input id="input-images" name="images[]" type="file" class="file-loading" accept="image/*" multiple>
+						<input id="input-images"
+						       name="images[]"
+						       type="file"
+						       class="file-loading"
+						       accept="image/*"
+						       multiple>
 		      </div>
 			</div>
     </div>
@@ -36,13 +42,19 @@
         <!-- Sale post url -->
         <div class="col-md-12">
 					<div class="form-group">
-						<label class="control-label" for="sale-post">Sale Posting</label>
+						<label class="control-label"
+						       for="{{ form.sale_post.id_for_label }}">Sale Posting</label>
 						<div class="input-group">
 							<span class="input-group-addon">http://</span>
-							<input type="url" class="form-control" id="sale-post" placeholder="ebay.com/itm/..." aria-describedby="sale-post-help">
+							<input type="url"
+							       class="form-control"
+							       id="{{ form.sale_post.id_for_label }}"
+							       placeholder="ebay.com/itm/..."
+							       aria-describedby="{{ form.sale_post.id_for_label }}-help">
 							<span class="input-group-addon">website-icon</span>
 						</div>
-						<span id="sale-post-help" class="help-block">A block of help text that breaks onto a new line and may extend beyond one line.</span>
+						<span id="{{ form.sale_post.id_for_label }}-help"
+						      class="help-block">{{ form.sale_post.help_text }}</span>
 					</div>
         </div>
       </div>
@@ -50,22 +62,40 @@
         <!-- Purchase price -->
         <div class="col-md-6">
 					<div class="form-group">
-						<label class="control-label" for="purchase">Purchase price</label>
+						<label class="control-label"
+						       for="{{ form.purchase_price.id_for_label }}">Purchase price</label>
 						<div class="input-group">
-							<span class="input-group-addon"><span class="glyphicon glyphicon-usd"></span></span>
-							<input type="text" class="form-control" id="purchase" placeholder="Purchase price" aria-describedby="purchase-help">
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-usd"></span>
+							</span>
+							<input type="text"
+							       class="form-control"
+							       id="{{ form.purchase_price.id_for_label }}"
+							       placeholder="Purchase price"
+							       aria-describedby="{{ form.purchase_price.id_for_label }}-help">
 						</div>
-						<span id="purchase-help" class="help-block">A block of help text that breaks onto a new line and may extend beyond one line.</span>
+						<span id="{{ form.purchase_price.id_for_label }}-help"
+						      class="help-block">{{ form.purchase_price.help_text }}</span>
 					</div>
         </div>
         <!-- Shipping price -->
         <div class="col-md-6">
 					<div class="form-group">
-						<label class="control-label" for="shipping-and-handling">Shipping &amp; Handling</label>
+						<label class="control-label"
+						       for="{{ form.shipping_price.id_for_label }}">Shipping &amp; Handling</label>
 						<div class="input-group">
-							<span class="input-group-addon"><span class="glyphicon glyphicon-usd"></span></span>
-							<input type="text" class="form-control" id="shipping-and-handling" placeholder="Shipping &amp; Handling">
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-usd"></span>
+							</span>
+							<input type="text"
+							       class="form-control"
+							       id="{{ form.shipping_price.id_for_label }}"
+							       placeholder="Shipping &amp; Handling"
+							       aria-describedby="{{ form.shipping_price.id_for_label }}-help">
 						</div>
+						<span id="{{ form.shipping_price.id_for_label }}-help"
+						      class="help-block">{{ form.shipping_price.help_text }}</span>
+
 					</div>
         </div>
       </div>
@@ -73,13 +103,19 @@
         <!-- Shipment tracking -->
         <div class="col-md-12">
 					<div class="form-group">
-						<label class="control-label" for="tracking-post">Tracking</label>
+						<label class="control-label"
+						       for="{{ form.tracking_num.id_for_label }}">Tracking</label>
 						<div class="input-group">
 							<span class="input-group-addon">http://</span>
-							<input type="test" class="form-control" id="tracking-post" placeholder="usps.com/itm/..." aria-describedby="tracking-help">
+							<input type="test"
+							       class="form-control"
+							       id="{{ form.tracking_num.id_for_label }}"
+							       placeholder="usps.com/itm/..."
+							       aria-describedby="{{ form.tracking_num.id_for_label }}-help">
 							<span class="input-group-addon">website-icon</span>
 						</div>
-						<span id="tracking-help" class="help-block">A block of help text that breaks onto a new line and may extend beyond one line.</span>
+						<span id="{{ form.tracking_num.id_for_label }}-help"
+						      class="help-block">{{ form.tracking_num.help_text}}</span>
 					</div>
         </div>
       </div>
@@ -87,35 +123,37 @@
         <!-- Purchase date -->
         <div class="col-md-9">
 					<div class="form-group">
-						<label class="control-label" for="timestamp">Purchase date</label>
+						<label class="control-label"
+						       for="{{ form.purchase_date.id_for_label }}">Purchase date</label>
 						<div class="input-group date" id="datetimepicker">
-							<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-							<input type='text' class="form-control" id="timestamp" aria-describedby="timestamp-help"></input>
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-calendar"></span>
+							</span>
+							<input type='text'
+							       class="form-control"
+							       id="{{ form.purchase_date.id_for_label }}"
+							       aria-describedby="{{ form.purchase_date.id_for_label }}-help"></input>
 						</div>
 <!--						<script type="text/javascript">
 							$(function() {
-								$('#datetimepicker').datetimepicker({
+								$('#{{ form.purchase_date.id_for_label }}').datetimepicker({
 									language: 'en',
 						      pick12HourFormat: true
 								});
 							});
 						</script>-->
-						<span id="timestamp-help" class="help-block">A block of help text that breaks onto a new line and may extend beyond one line.</span>
+						<span id="{{ form.purchase_date.id_for_label }}-help"
+						      class="help-block">{{ form.purchase_date.help_text }}</span>
 					</div>
         </div>
         <!-- Submit button -->
         <div class="col-md-3">
-					<button type="submit" class="btn btn-primary btn-block">Submit</button>
+					<button type="submit"
+					        class="btn btn-primary btn-block">Submit</button>
         </div>
       </div>
     </div>
   </div>
-</form>
-
-<form action="/stack/add/" method="post">
-    {% csrf_token %}
-    {{ form.as_ul }}
-    <input type="submit" value="Submit" />
 </form>
 
 {% endblock %}
