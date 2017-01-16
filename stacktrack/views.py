@@ -59,7 +59,7 @@ def dashboard(request):
 
 
 def add_to_stack(request, catalog_id):
-	return HttpResponse('Add new item to stack: #{}'.format(catalog_id))
+	return render(request, 'add_to_stack.html', { 'data': catalog_id })
 
 
 def catalog(request):

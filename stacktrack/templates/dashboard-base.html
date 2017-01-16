@@ -23,6 +23,7 @@
 	<!-- Custom styles for this template -->
 	<link href="/static/dashboard.css" rel="stylesheet" />
 	<link href="http://getbootstrap.com/assets/css/docs.min.css" rel=stylesheet>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.45/css/bootstrap-datetimepicker.css" />
 	<style>
 		.debug {
 			border: 1px solid #ccc;
@@ -92,7 +93,9 @@
 					<li><a href="">Another nav item</a></li>
 				</ul>
 			</div>
-			{% block content %}{% endblock %}
+			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				{% block content %}{% endblock %}
+			</div>
 		</div>
 	</div>
 
