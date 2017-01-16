@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<form>
+<form action="/purchase/" method="post">
   <div class="row show-grid">
 		<div class="row show-grid">
 			<h2 class="page-header">{{ data }}</h2>
@@ -110,6 +110,12 @@
       </div>
     </div>
   </div>
+</form>
+
+<form action="/stack/add/" method="post">
+    {% csrf_token %}
+    {{ form.as_ul }}
+    <input type="submit" value="Submit" />
 </form>
 
 {% endblock %}

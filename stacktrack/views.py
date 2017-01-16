@@ -58,8 +58,14 @@ def dashboard(request):
 	#return render(request, 'dashboard.html')
 
 
+from .forms import StackAdditionForm
 def add_to_stack(request, catalog_id):
-	return render(request, 'add_to_stack.html', { 'data': catalog_id })
+	form = StackAdditionForm()	
+	return render(request, 'add_to_stack.html', {
+		'page_name': 'Stack Addition',
+		'catalog_id': catalog_id,
+		'form': form,
+	})
 
 
 def catalog(request):
