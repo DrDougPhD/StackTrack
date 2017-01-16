@@ -5,20 +5,26 @@
 
 <form>
   <div class="row show-grid">
-    <!-- Obverse image -->
+		<div class="row show-grid">
+			<h2 class="page-header">{{ data }}</h2>
+		</div>
+
     <div class="col-md-4">
+	    <!-- Obverse image -->
 			<div class="row">
 		    <img class="img-responsive"
 			       src="http://placehold.it/150x150"
 			       alt="">
 			</div>
 			<hr>
+	    <!-- Reverse image -->
 			<div class="row">
 		    <img class="img-responsive"
 			       src="http://placehold.it/150x150"
 			       alt="glyphicon glyphicon-cloud-upload">
 			</div>
 			<hr>
+	    <!-- Upload images -->
 			<div class="row">
 		      <div class="form-group">
 						<input id="input-images" name="images[]" type="file" class="file-loading" accept="image/*" multiple>
