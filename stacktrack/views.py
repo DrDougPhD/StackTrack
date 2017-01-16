@@ -59,11 +59,12 @@ def dashboard(request):
 
 
 from .forms import StackAdditionForm
-def add_to_stack(request, catalog_id):
-	form = StackAdditionForm()	
-	return render(request, 'add_to_stack.html', {
-		'page_name': 'Stack Addition',
-		'catalog_id': catalog_id,
+def stack_addition(request, catalog_id):
+	ingot = Ingot.objects.get(id=catalog_id)
+	form = StackAdditionForm()
+	return render(request, 'stack_addition.html', {
+		'page_title': 'Stack Addition | {ingot_name}'.format(ingot_name=ingot.name),
+		'ingot': ingot,
 		'form': form,
 	})
 
