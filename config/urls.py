@@ -23,5 +23,6 @@ urlpatterns = [
 	url(r'^catalog', stacktrack.views.catalog, name='catalog'),
 	url(r'^batch', stacktrack.views.batch, name='batch'),
 	url(r'^stack/add/([0-9]+)/$', stacktrack.views.stack_addition, name='stack-add'),
+	url(r'^stack/add/json/$', stacktrack.views.stack_addition_json, name='stack-add-json'),
 	url(r'^admin/', include(admin.site.urls)),
 ]

@@ -57,12 +57,19 @@ def dashboard(request):
 from .forms import StackAdditionForm
 def stack_addition(request, catalog_id):
 	ingot = Ingot.objects.get(id=catalog_id)
+	print(request)
+	print(request.META)
+	"""
+	if 'application/json' in request.META['CONTENT_TYPE']:
+		print('='*80)
+		print('Receiving JSON!')
+		print(pprint.pformat(request.body)) 
+	"""
 
 	if request.method == 'POST':
 		form = StackAdditionForm(request.POST)
 		print(request.POST)
 		if form.is_valid():
-			import pprint
 			print('='*80)
 			print(pprint.pformat(form.cleaned_data))
 			print('Sale post: ' + form.cleaned_data['sale_post'])
@@ -81,6 +88,20 @@ def stack_addition(request, catalog_id):
 		'ingot': ingot,
 		'form': form,
 	})
+
+
+import json
+def stack_addition_json(request):
+	print('Content Type: {}'.format(request.content_type))
+	print('Method: {}'.format(request.method))
+	print('Body: {}'.format(request.body))
+	print('Is AJAX?: {}'.format(request.is_ajax()))
+	if request.method == 'POST':
+		name = request.POST.get('name')
+		return HttpResponse(json.dumps({'name': name}), content_type="application/json")
+
+	else:
+		return render(request, 'json.html', { 'data': 'blah' })
 
 
 def catalog(request):
